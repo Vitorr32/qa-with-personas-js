@@ -1,37 +1,116 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, X, Tag, Edit2, Trash2, MessageSquare } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Search, Filter, X, Check, } from 'lucide-react';
+import { Persona } from '../utils/Persona';
+
 import Header from '../features/chat/Header';
+import QuestionInput from '../features/chat/QuestionInput';
+import TagFilter from '../features/personas/TagFilter';
+import PersonaGrid from '../features/personas/PersonaGrid';
+import PersonaChip from '../features/personas/PersonaChip';
 
 // Mock data for personas
-const mockPersonas = [
-    { id: '1', name: 'Code Expert', description: 'Specialized in software development', tags: ['coding', 'technical'], avatar: '👨‍💻' },
-    { id: '2', name: 'Creative Writer', description: 'Storytelling and creative content', tags: ['writing', 'creative'], avatar: '✍️' },
-    { id: '3', name: 'Business Advisor', description: 'Business strategy and consulting', tags: ['business', 'strategy'], avatar: '💼' },
-    { id: '4', name: 'Life Coach', description: 'Personal development and wellness', tags: ['wellness', 'coaching'], avatar: '🌟' },
-    { id: '5', name: 'Data Scientist', description: 'Analytics and machine learning', tags: ['data', 'technical'], avatar: '📊' },
-    { id: '6', name: 'Marketing Guru', description: 'Digital marketing strategies', tags: ['marketing', 'business'], avatar: '📱' },
+const mockPersonas: Persona[] = [
+    {
+        id: '1',
+        name: 'Code Expert',
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CodeExpert',
+        greeting: 'Hello! I\'m here to help you with any coding challenges you might have.',
+        description: 'I am a specialized AI assistant with deep knowledge in software development, programming languages, algorithms, and best practices. I can help you debug code, explain complex concepts, review your work, and suggest improvements. Whether you\'re working with JavaScript, Python, Java, or any other language, I\'m here to assist.',
+        tags: ['coding', 'technical', 'javascript', 'python', 'debugging', 'algorithms']
+    },
+    {
+        id: '2',
+        name: 'Creative Writer',
+        greeting: 'Welcome! Let\'s craft some amazing stories together.',
+        description: 'As a creative writing specialist, I help bring your ideas to life through compelling narratives, character development, and engaging prose. I can assist with fiction, non-fiction, poetry, screenwriting, and more. Let\'s explore the art of storytelling and create something memorable.',
+        tags: ['writing', 'creative', 'storytelling', 'fiction']
+    },
+    {
+        id: '3',
+        name: 'Business Advisor',
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=BusinessAdvisor',
+        greeting: 'Ready to take your business to the next level?',
+        description: 'With expertise in business strategy, market analysis, and operational efficiency, I provide guidance for entrepreneurs and business leaders. Whether you\'re starting a new venture, scaling operations, or pivoting your business model, I offer insights backed by proven frameworks and real-world experience.',
+        tags: ['business', 'strategy', 'consulting', 'entrepreneurship', 'growth']
+    }
 ];
 
-const allTags = ['coding', 'technical', 'writing', 'creative', 'business', 'strategy', 'wellness', 'coaching', 'data', 'marketing'];
 
-function MainPage() {
+// Mock API call - Replace with real API
+const mockFetchTags = async (query: string, selectedTags: string[]): Promise<string[]> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const allTags = [
+        'coding', 'technical', 'writing', 'creative', 'business', 'strategy',
+        'wellness', 'coaching', 'data', 'marketing', 'fitness', 'finance',
+        'javascript', 'python', 'react', 'nodejs', 'typescript', 'java',
+        'design', 'ux', 'ui', 'frontend', 'backend', 'fullstack',
+        'ai', 'machine-learning', 'deep-learning', 'nlp', 'computer-vision',
+        'blockchain', 'cryptocurrency', 'web3', 'smart-contracts',
+        'cloud', 'aws', 'azure', 'gcp', 'devops', 'kubernetes',
+        'mobile', 'ios', 'android', 'flutter', 'react-native',
+        'database', 'sql', 'nosql', 'mongodb', 'postgresql',
+        'testing', 'qa', 'automation', 'cypress', 'jest',
+        'agile', 'scrum', 'project-management', 'leadership',
+        'sales', 'customer-service', 'crm', 'saas',
+        'content-writing', 'copywriting', 'seo', 'social-media',
+        'photography', 'video-editing', 'animation', 'graphics',
+        'music', 'audio-production', 'sound-design',
+        'health', 'nutrition', 'mental-health', 'meditation',
+        'education', 'teaching', 'e-learning', 'tutoring',
+        'legal', 'law', 'contracts', 'compliance',
+        'accounting', 'bookkeeping', 'tax', 'audit',
+        'hr', 'recruiting', 'talent-acquisition', 'employee-relations'
+    ];
+
+    return allTags
+        .filter(tag =>
+            tag.toLowerCase().includes(query.toLowerCase()) &&
+            !selectedTags.includes(tag)
+        )
+        .slice(0, 10); // Limit to 10 suggestions
+};
+
+export default function MainPage() {
+    const { t } = useTranslation();
     const [isFilterMode, setIsFilterMode] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [questionInput, setQuestionInput] = useState('');
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [toAskList, setToAskList] = useState<string[]>([]);
     const [filteredPersonas, setFilteredPersonas] = useState(mockPersonas);
     const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
 
     const handleFilterToggle = () => {
         setIsFilterMode(!isFilterMode);
+        if (!isFilterMode) {
+            // Entering filter mode - reset search
+            setSearchQuery('');
+        }
     };
 
-    const handleTagToggle = (tag: string) => {
-        setSelectedTags(prev =>
-            prev.includes(tag)
-                ? prev.filter(t => t !== tag)
-                : [...prev, tag]
+    const handleTagToggle = (tags: string[]) => {
+        setSelectedTags(tags);
+    };
+
+    const handleToggleToAskList = (personaId: string) => {
+        setToAskList(prev =>
+            prev.includes(personaId)
+                ? prev.filter(id => id !== personaId)
+                : [...prev, personaId]
         );
+    };
+
+    const handleBulkToggleToAskList = (personaIds: string[]) => {
+        setToAskList(prev => {
+            // Merge arrays and then create a Set to remove duplicates.
+            const combinedArray = [...prev, ...personaIds];
+            const uniqueElementsSet = new Set(combinedArray);
+            return [...uniqueElementsSet];
+        })
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,9 +120,14 @@ function MainPage() {
     };
 
     const handleSubmitQuestion = () => {
-        console.log('Submitting question:', searchQuery);
+        console.log('Submitting question:', questionInput);
         console.log('Files:', attachedFiles);
-        // Handle question submission
+        console.log('Selected personas:', toAskList.length > 0 ? toAskList : 'All personas');
+        // Navigate to Results Page
+    };
+
+    const handleBackToQuestion = () => {
+        setIsFilterMode(false);
     };
 
     React.useEffect(() => {
@@ -69,12 +153,11 @@ function MainPage() {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
             <Header />
 
-            {/* Main Content */}
             <AnimatePresence mode="wait">
                 {!isFilterMode ? (
-                    // Google-like centered search
+                    // Google-like centered question input
                     <motion.div
-                        key="search-center"
+                        key="question-center"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -89,44 +172,68 @@ function MainPage() {
                                 layout
                                 className="text-5xl font-bold text-center mb-4 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent"
                             >
-                                Ask Anything
+                                {t("search.title")}
                             </motion.h2>
                             <motion.p
                                 layout
                                 className="text-center text-gray-600 mb-8 text-lg"
                             >
-                                Get answers from thousands of specialized personas
+                                {toAskList.length > 0
+                                    ? `Get answers from ${toAskList.length} selected persona${toAskList.length > 1 ? 's' : ''}`
+                                    : 'Get answers from thousands of specialized personas'}
                             </motion.p>
 
-                            <SearchBox
-                                searchQuery={searchQuery}
-                                setSearchQuery={setSearchQuery}
+                            {/* Question Input Box */}
+                            <QuestionInput
+                                questionInput={questionInput}
+                                setQuestionInput={setQuestionInput}
                                 attachedFiles={attachedFiles}
                                 setAttachedFiles={setAttachedFiles}
                                 handleFileChange={handleFileChange}
                                 handleSubmitQuestion={handleSubmitQuestion}
-                                isFilterMode={isFilterMode}
                             />
 
                             <div className="flex justify-center gap-3 mt-6">
                                 <button
                                     onClick={handleSubmitQuestion}
-                                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg shadow-blue-200"
+                                    disabled={!questionInput.trim()}
+                                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Ask All Personas
+                                    {toAskList.length > 0
+                                        ? `Ask ${toAskList.length} Persona${toAskList.length > 1 ? 's' : ''}`
+                                        : 'Ask All Personas'}
                                 </button>
                                 <button
                                     onClick={handleFilterToggle}
                                     className="px-6 py-3 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium border border-gray-300 flex items-center gap-2"
                                 >
                                     <Filter className="w-4 h-4" />
-                                    Filter Personas
+                                    {toAskList.length > 0 ? 'Edit Selection' : 'Select Personas'}
                                 </button>
                             </div>
+
+                            {/* Selected Personas Preview */}
+                            {toAskList.length > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mt-8 bg-white rounded-xl p-6 border border-gray-200"
+                                >
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-3">Selected Personas:</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {toAskList.map((id, index) => {
+                                            const persona = mockPersonas.find(p => p.id === id);
+                                            return persona ? (
+                                                <PersonaChip key={id} persona={persona} onRemove={handleToggleToAskList} animationDelay={index * 0.05} />
+                                            ) : null;
+                                        })}
+                                    </div>
+                                </motion.div>
+                            )}
                         </motion.div>
                     </motion.div>
                 ) : (
-                    // Filter mode with animated header
+                    // Filter/Selection mode
                     <motion.div
                         key="filter-mode"
                         initial={{ opacity: 0 }}
@@ -134,30 +241,49 @@ function MainPage() {
                         exit={{ opacity: 0 }}
                         className="pb-8"
                     >
-                        {/* Animated Header Search */}
+                        {/* Search Header */}
                         <motion.div
                             layout
-                            initial={{ y: 0 }}
-                            animate={{ y: 0 }}
-                            className="bg-white border-b border-gray-200 px-6 py-6"
+                            className="bg-white border-b border-gray-200 px-6 py-6 sticky top-0 z-10"
                         >
                             <div className="max-w-7xl mx-auto">
-                                <SearchBox
-                                    searchQuery={searchQuery}
-                                    setSearchQuery={setSearchQuery}
-                                    attachedFiles={attachedFiles}
-                                    setAttachedFiles={setAttachedFiles}
-                                    handleFileChange={handleFileChange}
-                                    handleSubmitQuestion={handleSubmitQuestion}
-                                    isFilterMode={isFilterMode}
-                                />
-                                <button
-                                    onClick={handleFilterToggle}
-                                    className="mt-4 text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 font-medium"
-                                >
-                                    <X className="w-4 h-4" />
-                                    Close Filters
-                                </button>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-2xl font-bold text-gray-800">Select Personas</h2>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm text-gray-600 bg-blue-50 px-4 py-2 rounded-full font-medium">
+                                            {toAskList.length} selected
+                                        </span>
+                                        <button
+                                            onClick={handleBackToQuestion}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+                                        >
+                                            <Check className="w-4 h-4" />
+                                            Done
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Search Box */}
+                                <div className="relative bg-gray-50 rounded-xl border border-gray-200">
+                                    <div className="flex items-center px-4 py-3">
+                                        <Search className="w-5 h-5 text-gray-400 mr-3" />
+                                        <input
+                                            type="text"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            placeholder="Search personas by name or description..."
+                                            className="flex-1 text-base outline-none bg-transparent text-gray-800 placeholder-gray-400"
+                                        />
+                                        {searchQuery && (
+                                            <button
+                                                onClick={() => setSearchQuery('')}
+                                                className="p-1 hover:bg-gray-200 rounded transition-colors"
+                                            >
+                                                <X className="w-4 h-4 text-gray-500" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </motion.div>
 
@@ -169,75 +295,9 @@ function MainPage() {
                             className="max-w-7xl mx-auto px-6 mt-6"
                         >
                             {/* Tag Filters */}
-                            <div className="mb-8">
-                                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                    <Tag className="w-5 h-5 text-blue-600" />
-                                    Filter by Tags
-                                </h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {allTags.map(tag => (
-                                        <button
-                                            key={tag}
-                                            onClick={() => handleTagToggle(tag)}
-                                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedTags.includes(tag)
-                                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                                                : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-400'
-                                                }`}
-                                        >
-                                            {tag}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+                            <TagFilter selectedTags={selectedTags} onTagsChange={handleTagToggle} onFetchTags={mockFetchTags} />
 
-                            {/* Personas Grid */}
-                            <div>
-                                <h3 className="text-lg font-semibold mb-4">
-                                    {filteredPersonas.length} Personas Found
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {filteredPersonas.map((persona, index) => (
-                                        <motion.div
-                                            key={persona.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.05 }}
-                                            className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all cursor-pointer group"
-                                        >
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="text-4xl">{persona.avatar}</div>
-                                                    <div>
-                                                        <h4 className="font-semibold text-gray-900">{persona.name}</h4>
-                                                        <p className="text-sm text-gray-600">{persona.description}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button className="p-2 hover:bg-gray-100 rounded-lg">
-                                                        <MessageSquare className="w-4 h-4 text-blue-600" />
-                                                    </button>
-                                                    <button className="p-2 hover:bg-gray-100 rounded-lg">
-                                                        <Edit2 className="w-4 h-4 text-gray-600" />
-                                                    </button>
-                                                    <button className="p-2 hover:bg-gray-100 rounded-lg">
-                                                        <Trash2 className="w-4 h-4 text-red-600" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-wrap gap-1">
-                                                {persona.tags.map(tag => (
-                                                    <span
-                                                        key={tag}
-                                                        className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full"
-                                                    >
-                                                        {tag}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </div>
+                            <PersonaGrid personas={filteredPersonas} selectedPersonas={toAskList} onToggleSelect={handleToggleToAskList} onAddAllFiltered={handleBulkToggleToAskList} />
                         </motion.div>
                     </motion.div>
                 )}
@@ -245,59 +305,3 @@ function MainPage() {
         </div>
     );
 }
-
-function SearchBox({
-    searchQuery,
-    setSearchQuery,
-    attachedFiles,
-    setAttachedFiles,
-    handleFileChange,
-    handleSubmitQuestion,
-    isFilterMode
-}: any) {
-    return (
-        <motion.div layout className="relative">
-            <div className="relative bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden hover:shadow-2xl transition-shadow">
-                <div className="flex items-center px-6 py-4">
-                    <Search className="w-6 h-6 text-gray-400 mr-4" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSubmitQuestion()}
-                        placeholder="Ask a question or search personas..."
-                        className="flex-1 text-lg outline-none text-gray-800 placeholder-gray-400"
-                    />
-                    <label className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                        <input
-                            type="file"
-                            multiple
-                            accept="image/*,.pdf,.doc,.docx,.txt"
-                            onChange={handleFileChange}
-                            className="hidden"
-                        />
-                        <span className="text-2xl">📎</span>
-                    </label>
-                </div>
-
-                {attachedFiles.length > 0 && (
-                    <div className="px-6 pb-4 flex flex-wrap gap-2">
-                        {attachedFiles.map((file, i) => (
-                            <div key={i} className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full text-sm">
-                                <span className="text-blue-700">{file.name}</span>
-                                <button
-                                    onClick={() => setAttachedFiles(attachedFiles.filter((_, idx) => idx !== i))}
-                                    className="text-blue-600 hover:text-blue-800"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </motion.div>
-    );
-}
-
-export default MainPage;

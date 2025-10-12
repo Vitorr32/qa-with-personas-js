@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLanguage } from '../../store/languageSlice';
 import type { RootState } from '../../store/store';
 
 function Header() {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const dispatch = useDispatch();
     const currentLanguage = useSelector((state: RootState) => state.language.currentLanguage);
     const [showLangMenu, setShowLangMenu] = useState(false);
