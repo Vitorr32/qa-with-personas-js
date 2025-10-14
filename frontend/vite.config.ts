@@ -3,10 +3,12 @@ import * as path from "node:path"
 import { defineConfig } from "vitest/config"
 import packageJson from "./package.json" with { type: "json" }
 import tailwindcss from '@tailwindcss/vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
+
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [tanstackRouter({ target: "react", autoCodeSplitting: true }), react(), tailwindcss()],
 
   server: {
     open: true,

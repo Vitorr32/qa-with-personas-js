@@ -5,15 +5,29 @@ import { App } from "./App"
 import { store } from "./store/store"
 import "./index.css"
 
+import { routeTree } from './routeTree.gen'
+import { createRouter, RouterProvider } from "@tanstack/react-router"
+
+
+const router = createRouter({ routeTree })
+// Register the router instance for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router
+  }
+}
+
 const container = document.getElementById("root")
+
 
 if (container) {
   const root = createRoot(container)
 
+
   root.render(
     <StrictMode>
       <Provider store={store}>
-        <App />
+        <RouterProvider router={router} />
       </Provider>
     </StrictMode>,
   )
