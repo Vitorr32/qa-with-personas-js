@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-// Redux Slice
 export const questionSlice = createSlice({
     name: 'question',
     initialState: {

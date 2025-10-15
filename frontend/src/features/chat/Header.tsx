@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Globe } from 'lucide-react';
+import { Globe, Home, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLanguage } from '../../store/languageSlice';
 import type { RootState } from '../../store/store';
+import { Link } from '@tanstack/react-router';
 
 function Header() {
     const { t } = useTranslation();
@@ -23,6 +24,8 @@ function Header() {
         setShowLangMenu(false);
     };
 
+    const isActive = (path: string) => location.pathname === path;
+
     return (
         <motion.header
             layout
@@ -36,41 +39,75 @@ function Header() {
                     {t('app.name')}
                 </motion.h1>
 
-                <div className="flex gap-2 items-center">
-                    {/* Language Selector */}
-                    <div className="relative">
-                        <button
-                            onClick={() => setShowLangMenu(!showLangMenu)}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
-                            aria-label="Change language"
-                        >
-                            <Globe className="w-5 h-5 text-gray-700" />
-                            <span className="text-sm font-medium text-gray-700">
-                                {languages.find(l => l.code === currentLanguage)?.flag}
-                            </span>
-                        </button>
-
-                        {showLangMenu && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg cursor-pointer border border-gray-200 py-2 min-w-[160px] z-50"
+                <motion.div className='flex items-center'>
+                    <motion.nav className="flex items-center gap-2">
+                        {/* Home Link */}
+                        <Link to="/">
+                            <button
+                                className={`p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${isActive('/')
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'hover:bg-gray-100 text-gray-700'
+                                    }`}
+                                aria-label="Home"
                             >
-                                {languages.map(lang => (
-                                    <button
-                                        key={lang.code}
-                                        onClick={() => handleLanguageChange(lang.code)}
-                                        className={`w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-3 cursor-pointer ${currentLanguage === lang.code ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                                            }`}
-                                    >
-                                        <span className="text-xl">{lang.flag}</span>
-                                        <span className="text-sm font-medium">{lang.name}</span>
-                                    </button>
-                                ))}
-                            </motion.div>
-                        )}
+                                <Home className="w-5 h-5" />
+                                <span className="hidden sm:inline text-sm font-medium">Home</span>
+                            </button>
+                        </Link>
+
+                        {/* Settings Link */}
+                        <Link to="/settings">
+                            <button
+                                className={`p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${isActive('/settings')
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'hover:bg-gray-100 text-gray-700'
+                                    }`}
+                                aria-label="Settings"
+                            >
+                                <Settings className="w-5 h-5" />
+                                <span className="hidden sm:inline text-sm font-medium">Settings</span>
+                            </button>
+                        </Link>
+                    </motion.nav>
+
+                    <div className="w-px h-6 bg-gray-300 mx-1 ml-2 mr-0" />
+
+                    <div className="flex gap-2 items-center">
+                        {/* Language Selector */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowLangMenu(!showLangMenu)}
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                                aria-label="Change language"
+                            >
+                                <Globe className="w-5 h-5 text-gray-700" />
+                                <span className="text-sm font-medium text-gray-700">
+                                    {languages.find(l => l.code === currentLanguage)?.flag}
+                                </span>
+                            </button>
+
+                            {showLangMenu && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg cursor-pointer border border-gray-200 py-2 min-w-[160px] z-50"
+                                >
+                                    {languages.map(lang => (
+                                        <button
+                                            key={lang.code}
+                                            onClick={() => handleLanguageChange(lang.code)}
+                                            className={`w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-3 cursor-pointer ${currentLanguage === lang.code ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                                                }`}
+                                        >
+                                            <span className="text-xl">{lang.flag}</span>
+                                            <span className="text-sm font-medium">{lang.name}</span>
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
         </motion.header>
     );

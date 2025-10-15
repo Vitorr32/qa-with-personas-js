@@ -161,7 +161,6 @@ export default function MainPage() {
     return (
         <AnimatePresence mode="wait">
             {!isFilterMode ? (
-                // Google-like centered question input
                 <motion.div
                     key="question-center"
                     initial={{ opacity: 0 }}
@@ -174,9 +173,6 @@ export default function MainPage() {
                         layout
                         className="w-full max-w-3xl"
                     >
-                        <Link to="/results" className="[&.active]:font-bold">
-                            Home
-                        </Link>
                         <motion.h2
                             layout
                             className="text-5xl font-bold text-center mb-4 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent"
