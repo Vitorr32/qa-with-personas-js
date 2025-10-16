@@ -1,3 +1,4 @@
+import { PartialType } from '@nestjs/mapped-types';
 import { IsString, IsNotEmpty, IsArray, IsOptional } from 'class-validator';
 
 export class CreatePersonaDto {
@@ -22,3 +23,5 @@ export class CreatePersonaDto {
     @IsOptional()
     tags?: string[];
 }
+
+export class UpdatePersonaDto extends PartialType(CreatePersonaDto) { }

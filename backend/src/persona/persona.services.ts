@@ -6,8 +6,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { Tag } from 'src/tag/tag.entity';
-import { CreatePersonaDto } from './create-persona.dto';
-import { UpdatePersonaDto } from './update-persona.dto';
+import { CreatePersonaDto, UpdatePersonaDto } from './persona.dto';
 
 @Injectable()
 export class PersonasService {

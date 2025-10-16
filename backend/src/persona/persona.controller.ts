@@ -1,8 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PersonasService } from './persona.services';
-import { CreatePersonaDto } from './create-persona.dto';
-import { UpdatePersonaDto } from './update-persona.dto';
+import { CreatePersonaDto, UpdatePersonaDto } from './persona.dto';
 
 @Controller('personas')
 export class PersonasController {

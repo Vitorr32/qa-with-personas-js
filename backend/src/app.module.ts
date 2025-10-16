@@ -8,6 +8,9 @@ import { PersonasController } from './persona/persona.controller';
 import { TagsController } from './tag/tag.controller';
 import { TagsService } from './tag/tag.service';
 import { PersonasService } from './persona/persona.services';
+import { PromptsController } from './prompt/prompt.controller';
+import { PromptsService } from './prompt/prompt.service';
+import { Prompts } from './prompt/prompt.entity';
 
 console.log(process.env)
 
@@ -20,16 +23,16 @@ console.log(process.env)
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || '123',
       database: process.env.DB_NAME || 'qa_with_personas',
-      entities: [Persona, Tag],
+      entities: [Persona, Tag, Prompts],
       synchronize: process.env.NODE_ENV !== 'production',
     }),
-    TypeOrmModule.forFeature([Persona, Tag]),
+    TypeOrmModule.forFeature([Persona, Tag, Prompts]),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
   ],
-  controllers: [PersonasController, TagsController],
-  providers: [PersonasService, TagsService],
+  controllers: [PersonasController, TagsController, PromptsController],
+  providers: [PersonasService, TagsService, PromptsService],
 })
 export class AppModule { }
