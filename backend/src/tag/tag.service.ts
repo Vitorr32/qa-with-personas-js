@@ -18,6 +18,19 @@ export class TagsService {
         return this.tagRepo.findOne({ where: { name } });
     }
 
+    /**
+     * Find tags whose name contains the provided query (case-insensitive).
+     * Used by frontend autocomplete to suggest matching tags.
+     */
+    async findByQuery(query: string): Promise<Tag[]> {
+        const q = query.trim().toLowerCase();
+        return this.tagRepo
+            .createQueryBuilder('tag')
+            .where('LOWER(tag.name) LIKE :q', { q: `%${q}%` })
+            .leftJoinAndSelect('tag.personas', 'persona')
+            .getMany();
+    }
+
     async getUniqueTags(): Promise<Tag[]> {
         // Get all distinct tags used by personas
         const tags = await this.tagRepo

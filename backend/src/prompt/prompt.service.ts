@@ -12,9 +12,10 @@ export class PromptsService {
     ) { }
 
     async getPrompts(): Promise<PromptsResponseDto> {
-        const prompts = await this.promptsRepository.findOne({
-            where: { id: 1 },
-        });
+        // Fetch the single prompts row. Don't assume an id value so this works
+        // whether the PK is a uuid or an auto-increment integer.
+        const promptsArray = await this.promptsRepository.find();
+        const prompts = promptsArray[0];
 
         if (!prompts) {
             throw new NotFoundException('Prompts configuration not found');
@@ -28,14 +29,13 @@ export class PromptsService {
     }
 
     async updatePrompts(updatePromptsDto: UpdatePromptsDto): Promise<PromptsResponseDto> {
-        let prompts = await this.promptsRepository.findOne({
-            where: { id: 1 },
-        });
+        const promptsArray = await this.promptsRepository.find();
+        let prompts = promptsArray[0];
 
         if (!prompts) {
-            // Create the row if it doesn't exist
+            // Create the row if it doesn't exist. Let the database generate the id
+            // (works with UUID or numeric PKs).
             prompts = this.promptsRepository.create({
-                id: 1,
                 ...updatePromptsDto,
             });
         } else {

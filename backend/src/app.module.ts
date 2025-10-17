@@ -12,8 +12,6 @@ import { PromptsController } from './prompt/prompt.controller';
 import { PromptsService } from './prompt/prompt.service';
 import { Prompts } from './prompt/prompt.entity';
 
-console.log(process.env)
-
 @Module({
   imports: [
     TypeOrmModule.forRoot({

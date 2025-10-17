@@ -1,31 +1,99 @@
 import { motion } from "framer-motion"
 import { Upload, X } from "lucide-react";
 import { useState } from "react";
+import { useGetTagsQuery, useAddPersonaMutation } from '../../store/apiSlice';
+import AvatarCropModal from './AvatarCropModal';
+import { Tag } from "../../utils/Tag";
 
-export default function AddPersonaSection({ onAdd }: any) {
+export default function AddPersonaSection() {
     const [formData, setFormData] = useState({ name: '', avatar: '', greeting: '', description: '', tags: [] as string[] });
     const [newTag, setNewTag] = useState('');
     const [avatarPreview, setAvatarPreview] = useState('');
+    const { data: availableTags = [] } = useGetTagsQuery();
+    const [addPersona] = useAddPersonaMutation();
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
+    // Some constants
+    const MAX_FILE_SIZE = 1000 * 1024; // 1 MB
+    const OUTPUT_AVATAR_SIZE = 128; // 128x128 pixels
+
+    const readFileAsDataURL = (file: File): Promise<string> =>
+        new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatarPreview(reader.result as string);
-                setFormData({ ...formData, avatar: reader.result as string });
-            };
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.onload = () => resolve(reader.result as string);
             reader.readAsDataURL(file);
+        });
+
+    const [cropSrc, setCropSrc] = useState<string | null>(null);
+    const [isCropping, setIsCropping] = useState(false);
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > MAX_FILE_SIZE) {
+            alert(`Image is too large (${Math.round(file.size / 1024)} KB). Please choose an image smaller than ${Math.round(MAX_FILE_SIZE / 1024)} KB or a smaller resolution.`);
+            return;
+        }
+
+        try {
+            const dataUrl = await readFileAsDataURL(file);
+            setCropSrc(dataUrl);
+            setIsCropping(true);
+        } catch (err) {
+            console.error('Failed to read file', err);
+            alert('Failed to process the image. Please try another file.');
         }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (formData.name && formData.greeting && formData.description) {
-            onAdd(formData);
-            setFormData({ name: '', avatar: '', greeting: '', description: '', tags: [] });
-            setAvatarPreview('');
+            try {
+                // If avatar is a Blob URL or a blob was set via crop, build FormData
+                const fd = new FormData();
+                fd.append('name', formData.name);
+                fd.append('greeting', formData.greeting);
+                fd.append('description', formData.description);
+                if (formData.tags && formData.tags.length) {
+                    // Send tags as JSON string; backend expects tags in body as array
+                    fd.append('tags', JSON.stringify(formData.tags));
+                }
+
+                // If avatar is a data URL (base64), convert it to blob
+                if (formData.avatar && typeof formData.avatar === 'string' && formData.avatar.startsWith('data:')) {
+                    const res = await fetch(formData.avatar);
+                    const blob = await res.blob();
+                    fd.append('avatar', blob, 'avatar.jpg');
+                }
+
+                console.log('Submitting new persona', formData, fd);
+
+                await addPersona(fd as any).unwrap();
+                setFormData({ name: '', avatar: '', greeting: '', description: '', tags: [] });
+                setAvatarPreview('');
+            } catch (err) {
+                console.error('Failed to add persona', err);
+            }
         }
     };
+
+    const handleCropCancel = () => {
+        setCropSrc(null);
+        setIsCropping(false);
+    };
+
+    const handleCropComplete = (blob: Blob, _filename: string) => {
+        // Show preview from blob and store the blob as data URL in formData.avatar
+        const reader = new FileReader();
+        reader.onload = () => {
+            setAvatarPreview(reader.result as string);
+            setFormData({ ...formData, avatar: reader.result as string });
+        };
+        reader.readAsDataURL(blob);
+        setCropSrc(null);
+        setIsCropping(false);
+    };
+
 
     return (
         <motion.div
@@ -110,6 +178,16 @@ export default function AddPersonaSection({ onAdd }: any) {
                             placeholder="Add tag and press Enter..."
                             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                         />
+                        {/* quick suggestions from existing tags */}
+                        {availableTags.slice(0, 5).map((tag: Tag) => (
+                            <button
+                                key={tag.id}
+                                onClick={() => setFormData({ ...formData, tags: Array.from(new Set([...formData.tags, tag.name])) })}
+                                className="px-2 py-1 bg-gray-100 rounded-full text-sm"
+                            >
+                                {tag.name}
+                            </button>
+                        ))}
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {formData.tags.map((tag) => (
@@ -132,6 +210,14 @@ export default function AddPersonaSection({ onAdd }: any) {
                     Create Persona
                 </button>
             </div>
+            {isCropping && cropSrc && (
+                <AvatarCropModal
+                    imageSrc={cropSrc}
+                    onCancel={handleCropCancel}
+                    onComplete={handleCropComplete}
+                    outputSize={OUTPUT_AVATAR_SIZE}
+                />
+            )}
         </motion.div>
     );
 }

@@ -1,4 +1,4 @@
-import { generateAvatarData } from "../../utils/Avatar";
+import { generateAvatarData, getAvatarUrl } from "../../utils/Avatar";
 
 export default function PersonaCardEdit({ persona, onClick }: any) {
     const { initials, backgroundColor, textColor } = generateAvatarData(persona.name);
@@ -10,7 +10,7 @@ export default function PersonaCardEdit({ persona, onClick }: any) {
         >
             <div className="flex items-center gap-3 mb-3">
                 {persona.avatar ? (
-                    <img src={persona.avatar} alt={persona.name} className="w-12 h-12 rounded-full object-cover" />
+                    <img src={getAvatarUrl(persona.avatar)} alt={persona.name} className="w-12 h-12 rounded-full object-cover" />
                 ) : (
                     <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-white" style={{ backgroundColor: backgroundColor, color: textColor }}>
                         {initials}
@@ -22,11 +22,15 @@ export default function PersonaCardEdit({ persona, onClick }: any) {
                 </div>
             </div>
             <div className="flex flex-wrap gap-1">
-                {persona.tags.slice(0, 3).map((tag: string) => (
-                    <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                        {tag}
-                    </span>
-                ))}
+                {(persona.tags || []).slice(0, 3).map((tag: any) => {
+                    const tagName = typeof tag === 'string' ? tag : tag?.name || String(tag);
+                    const key = typeof tag === 'string' ? tag : tag?.id || tagName;
+                    return (
+                        <span key={key} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                            {tagName}
+                        </span>
+                    );
+                })}
             </div>
         </div>
     );

@@ -1,12 +1,12 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { Provider } from "react-redux"
-import { App } from "./App"
 import { store } from "./store/store"
-import "./index.css"
+import "./main.css"
 
 import { routeTree } from './routeTree.gen'
 import { createRouter, RouterProvider } from "@tanstack/react-router"
+import { ToastContainer } from "react-toastify"
 
 
 const router = createRouter({ routeTree })
@@ -28,6 +28,7 @@ if (container) {
     <StrictMode>
       <Provider store={store}>
         <RouterProvider router={router} />
+        <ToastContainer />
       </Provider>
     </StrictMode>,
   )

@@ -80,3 +80,13 @@ export function generateAvatarData(name: string): {
         textColor: colors.text,
     };
 }
+
+export function getAvatarUrl(avatarPath: string | undefined): string | undefined {
+    console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+    console.log('avatarPath:', avatarPath);
+    if (!avatarPath) return undefined;
+    if (avatarPath.startsWith('http://') || avatarPath.startsWith('https://')) {
+        return avatarPath;
+    }
+    return `${import.meta.env.VITE_API_BASE_URL || ''}/${avatarPath.replace(/^\/+/, '')}`;
+}
