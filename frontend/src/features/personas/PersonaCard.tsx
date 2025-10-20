@@ -6,22 +6,10 @@ import { Persona } from '../../utils/Persona';
 interface PersonaCardProps {
     persona: Persona;
     isSelected: boolean;
-    onToggleSelect: (personaId: string) => void;
+    onToggleSelect: () => void;
     animationDelay?: number;
 }
 
-// Fallback avatars based on first letter of name
-const getFallbackAvatar = (name: string): string => {
-    const avatars: { [key: string]: string } = {
-        'A': '🅰️', 'B': '🅱️', 'C': '☪️', 'D': '🎯', 'E': '🔆', 'F': '🎯',
-        'G': '💚', 'H': '🏠', 'I': 'ℹ️', 'J': '🎷', 'K': '🔑', 'L': '💙',
-        'M': 'Ⓜ️', 'N': '🎵', 'O': '⭕', 'P': '🅿️', 'Q': '👑', 'R': '♻️',
-        'S': '⭐', 'T': '🎯', 'U': '☂️', 'V': '✌️', 'W': '〰️', 'X': '❌',
-        'Y': '💛', 'Z': '⚡'
-    };
-    const firstLetter = name.charAt(0).toUpperCase();
-    return avatars[firstLetter] || '🤖';
-};
 
 export default function PersonaCard({ persona, isSelected, onToggleSelect, animationDelay = 0 }: PersonaCardProps) {
     const [showModal, setShowModal] = useState(false);
@@ -34,7 +22,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
         if ((e.target as HTMLElement).closest('.details-button')) {
             return;
         }
-        onToggleSelect(persona.id);
+        onToggleSelect();
     };
 
     const handleDetailsClick = (e: React.MouseEvent) => {
@@ -104,13 +92,13 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                     <div className="flex flex-wrap gap-1 flex-1">
                         {displayTags.map((tag, index) => (
                             <span
-                                key={index}
+                                key={tag.id}
                                 className={`px-2 py-1 text-xs rounded-full font-medium ${isSelected
                                     ? 'bg-blue-100 text-blue-700'
                                     : 'bg-gray-100 text-gray-700'
                                     }`}
                             >
-                                {tag}
+                                {tag.name}
                             </span>
                         ))}
                         {hasMoreTags && (
@@ -210,10 +198,10 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                                     <div className="flex flex-wrap gap-2">
                                         {persona.tags.map((tag, index) => (
                                             <span
-                                                key={index}
+                                                key={tag.id}
                                                 className="px-3 py-2 bg-blue-50 text-blue-700 text-sm rounded-lg font-medium border border-blue-200"
                                             >
-                                                {tag}
+                                                {tag.name}
                                             </span>
                                         ))}
                                     </div>
@@ -239,7 +227,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                                 </button>
                                 <button
                                     onClick={() => {
-                                        onToggleSelect(persona.id);
+                                        onToggleSelect();
                                         setShowModal(false);
                                     }}
                                     className={`px-4 py-2 rounded-lg transition-colors font-medium ${isSelected

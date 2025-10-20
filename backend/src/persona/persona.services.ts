@@ -80,7 +80,7 @@ export class PersonasService {
         pageSize = 20,
         cursor?: string,
         inputQuery?: string,
-        tagNames?: string[],
+        tagIds?: string[],
     ): Promise<{ items: Persona[]; nextCursor?: string; hasMore: boolean }> {
         const qb = this.personaRepo.createQueryBuilder('persona').leftJoinAndSelect('persona.tags', 'tag');
 
@@ -93,9 +93,9 @@ export class PersonasService {
             );
         }
 
-        // Tag filter (match any of the provided tag names)
-        if (tagNames && tagNames.length > 0) {
-            qb.andWhere('tag.name IN (:...tagNames)', { tagNames });
+        // Tag filter (match any of the provided tag ids)
+        if (tagIds && tagIds.length > 0) {
+            qb.andWhere('tag.id IN (:...tagIds)', { tagIds });
         }
 
         // Ordering: newest first. Use createdAt + id for a stable cursor.
@@ -170,12 +170,18 @@ export class PersonasService {
         const fileName = `${uuidv4()}-${Date.now()}${path.extname(file.originalname)}`;
         const filePath = path.join(this.avatarDir, fileName);
         await fs.writeFile(filePath, file.buffer);
-        return path.join('uploads', 'avatars', fileName);
+        // Always store POSIX-style paths (forward slashes) in the DB so
+        // frontend can concatenate with base URL reliably across platforms.
+        return ['uploads', 'avatars', fileName].join('/');
     }
 
     private async deleteAvatar(avatarPath: string): Promise<void> {
         try {
-            const fullPath = path.join(process.cwd(), avatarPath);
+            // avatarPath may be stored with POSIX slashes. Convert to
+            // platform-specific path before unlinking.
+            const normalized = avatarPath.replace(/\\/g, '/');
+            const parts = normalized.split('/').filter(Boolean);
+            const fullPath = path.join(process.cwd(), ...parts);
             await fs.unlink(fullPath);
         } catch (error) {
             console.warn(`Failed to delete avatar: ${avatarPath}`, error);

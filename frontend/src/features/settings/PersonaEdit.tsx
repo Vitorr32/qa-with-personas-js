@@ -4,10 +4,10 @@ import { Persona } from '../../utils/Persona';
 import { LoaderPinwheel, Search } from 'lucide-react';
 import PersonaCardEdit from '../personas/PersonaCardEdit';
 import EditPersonaModal from '../personas/PersonaEditModal';
-import { useGetPersonasQuery, useGetTagsQuery, useUpdatePersonaMutation } from '../../store/apiSlice';
-import { Bounce, toast } from 'react-toastify';
+import { useGetPersonasQuery, useUpdatePersonaMutation } from '../../store/apiSlice';
 import { Tag } from '../../utils/Tag';
 import { errorToast, successToast } from '../../utils/Toasts';
+import TagPicker from '../personas/TagPicker';
 
 export default function PersonaEdit() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -17,19 +17,16 @@ export default function PersonaEdit() {
     const [items, setItems] = useState<Persona[]>([]);
     const [hasMore, setHasMore] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
-    // Memoize tag names and query args so RTK Query receives stable references
-    const memoizedTags = useMemo(() => selectedTags.map((t) => t.name), [selectedTags]);
 
     const queryArgs = useMemo(() => ({
         pageSize,
         cursor,
         inputQuery: searchQuery,
-        tags: memoizedTags.length ? memoizedTags : undefined,
+        tags: selectedTags,
         refreshKey,
-    }), [pageSize, cursor, searchQuery, memoizedTags, refreshKey]);
+    }), [pageSize, cursor, searchQuery, selectedTags, refreshKey]);
 
-    const { data: personasPage, isLoading: loadingPersonas } = useGetPersonasQuery(queryArgs as any);
-    const { data: allTags = [] } = useGetTagsQuery();
+    const { data: personasPage, isLoading: loadingPersonas } = useGetPersonasQuery(queryArgs);
     const [updatePersona] = useUpdatePersonaMutation();
     const [editingPersona, setEditingPersona] = useState<Persona | null>(null);
 
@@ -109,24 +106,7 @@ export default function PersonaEdit() {
                         </div>
 
                         {/* Tag Filters */}
-                        {allTags.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {allTags.map((tag: Tag) => (
-                                    <button
-                                        key={tag.id}
-                                        onClick={() => setSelectedTags((prev: Tag[]) =>
-                                            prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-                                        )}
-                                        className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${selectedTags.includes(tag)
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                    >
-                                        {tag.name}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                        <TagPicker selectedTags={selectedTags} onTagPicked={(tags) => setSelectedTags(tags)} />
                     </div>
 
                     {/* Personas Grid */}

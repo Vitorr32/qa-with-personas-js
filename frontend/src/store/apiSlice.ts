@@ -6,26 +6,26 @@ import { Tag } from '../utils/Tag';
 
 export const apiSlice = createApi({
     reducerPath: 'api',
-    baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:3000/' }),
+    baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_API_BASE_URL }),
     tagTypes: ['Personas', 'Tags', 'Prompts'],
     endpoints: (builder) => ({
         getPersonas: builder.query<
             { items: Persona[]; nextCursor?: string; hasMore: boolean },
-            { pageSize?: number; cursor?: string; inputQuery?: string; tags?: string[] } | void
+            { pageSize?: number; cursor?: string; inputQuery?: string; tags?: Tag[] } | void
         >({
             query: (args = {}) => {
                 const { pageSize, cursor, inputQuery, tags } = args as {
                     pageSize?: number;
                     cursor?: string;
                     inputQuery?: string;
-                    tags?: string[];
+                    tags?: Tag[];
                 };
 
                 const params: Record<string, any> = {};
                 if (pageSize) params.pageSize = pageSize;
                 if (cursor) params.cursor = cursor;
                 if (inputQuery) params.inputQuery = inputQuery;
-                if (tags) params.tags = JSON.stringify(tags);
+                if (tags) params.tags = JSON.stringify(tags.map(t => t.id));
 
                 return {
                     url: '/personas',
@@ -36,7 +36,6 @@ export const apiSlice = createApi({
             providesTags: (result) => {
                 if (!result) return [{ type: 'Personas' as const, id: 'LIST' }];
 
-                // Support legacy array response (result is Persona[]) and new paged response
                 const maybeItems: Persona[] = Array.isArray(result) ? (result as unknown as Persona[]) : (result as any).items || [];
 
                 return [
@@ -74,10 +73,10 @@ export const apiSlice = createApi({
                 id ? [{ type: 'Personas', id: 'LIST' }, { type: 'Personas', id }] : [{ type: 'Personas', id: 'LIST' }],
         }),
 
-        getTags: builder.query<Tag[], void>({
-            query: (inputQuerry: string | void) => ({
+        getTags: builder.query<Tag[], string | void>({
+            query: (inputQuery: string | void) => ({
                 url: '/tags',
-                params: { inputQuery: inputQuerry },
+                params: { inputQuery },
                 method: 'GET',
             }),
             providesTags: [{ type: 'Tags', id: 'LIST' }],

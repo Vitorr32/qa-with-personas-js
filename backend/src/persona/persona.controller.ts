@@ -26,18 +26,18 @@ export class PersonasController {
         // normalize pageSize
         const pageSize = pageSizeStr ? Math.max(1, Math.min(500, parseInt(pageSizeStr, 10) || 20)) : 20;
 
-        // normalize tags: can be JSON array string or comma-separated
-        let tagNames: string[] | undefined = undefined;
+        // normalize tags: frontend now sends tag UUIDs (either JSON array string or comma-separated)
+        let tagIds: string[] | undefined = undefined;
         if (tags) {
             try {
                 const parsed = JSON.parse(tags);
-                if (Array.isArray(parsed)) tagNames = parsed.map(String);
+                if (Array.isArray(parsed)) tagIds = parsed.map(String);
             } catch {
-                tagNames = tags.split(',').map((t) => t.trim()).filter(Boolean);
+                tagIds = tags.split(',').map((t) => t.trim()).filter(Boolean);
             }
         }
 
-        return this.personasService.findCursorPaged(pageSize, cursor, inputQuery, tagNames);
+        return this.personasService.findCursorPaged(pageSize, cursor, inputQuery, tagIds);
     }
 
     @Get(':id')

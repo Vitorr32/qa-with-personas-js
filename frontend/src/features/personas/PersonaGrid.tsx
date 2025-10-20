@@ -5,28 +5,23 @@ import PersonaCard from './PersonaCard';
 
 interface PersonaGridProps {
     personas: Persona[];
-    selectedPersonas: string[];
-    onToggleSelect: (personaId: string) => void;
-    onAddAllFiltered: (personaIds: string[]) => void;
+    selectedPersonas: Persona[];
+    onToggleSelect: (personaId: Persona) => void;
+    onAddAllFiltered: (personaIds: Persona[]) => void;
 }
 
 export default function PersonaGrid({
-    personas,
-    selectedPersonas,
+    personas = [],
+    selectedPersonas = [],
     onToggleSelect,
     onAddAllFiltered
 }: PersonaGridProps) {
 
     const allFilteredSelected = personas.length > 0 &&
-        personas.every(p => selectedPersonas.includes(p.id));
-
-    const addAllFilteredToList = () => {
-        onAddAllFiltered(personas.map(p => p.id))
-    }
+        personas.every(p => selectedPersonas.find(q => p.id === q.id));
 
     return (
         <div>
-            {/* Header with count and Add All button */}
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
                     {personas.length} Persona{personas.length !== 1 ? 's' : ''} Found
@@ -34,7 +29,7 @@ export default function PersonaGrid({
 
                 {personas.length > 0 && (
                     <button
-                        onClick={addAllFilteredToList}
+                        onClick={() => onAddAllFiltered(personas)}
                         disabled={allFilteredSelected}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${allFilteredSelected
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -63,8 +58,8 @@ export default function PersonaGrid({
                         <PersonaCard
                             key={persona.id}
                             persona={persona}
-                            isSelected={selectedPersonas.includes(persona.id)}
-                            onToggleSelect={onToggleSelect}
+                            isSelected={Boolean(selectedPersonas.find(p => p.id == persona.id))}
+                            onToggleSelect={() => onToggleSelect(persona)}
                             animationDelay={index * 0.05}
                         />
                     ))}

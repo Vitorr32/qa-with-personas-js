@@ -2,80 +2,17 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, X, Check, } from 'lucide-react';
-import { Persona } from '../utils/Persona';
 
 import QuestionInput from '../features/chat/QuestionInput';
-import TagFilter from '../features/personas/TagFilter';
 import PersonaGrid from '../features/personas/PersonaGrid';
 import PersonaChip from '../features/personas/PersonaChip';
-import { Link } from '@tanstack/react-router';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from '@tanstack/react-router';
 import { setQuestion, setFiles, setPersonas, setTags } from '../store/questionSlice';
-
-// Mock data for personas
-const mockPersonas: Persona[] = [
-    {
-        id: '1',
-        name: 'Code Expert',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CodeExpert',
-        greeting: 'Hello! I\'m here to help you with any coding challenges you might have.',
-        description: 'I am a specialized AI assistant with deep knowledge in software development, programming languages, algorithms, and best practices. I can help you debug code, explain complex concepts, review your work, and suggest improvements. Whether you\'re working with JavaScript, Python, Java, or any other language, I\'m here to assist.',
-        tags: ['coding', 'technical', 'javascript', 'python', 'debugging', 'algorithms']
-    },
-    {
-        id: '2',
-        name: 'Creative Writer',
-        greeting: 'Welcome! Let\'s craft some amazing stories together.',
-        description: 'As a creative writing specialist, I help bring your ideas to life through compelling narratives, character development, and engaging prose. I can assist with fiction, non-fiction, poetry, screenwriting, and more. Let\'s explore the art of storytelling and create something memorable.',
-        tags: ['writing', 'creative', 'storytelling', 'fiction']
-    },
-    {
-        id: '3',
-        name: 'Business Advisor',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=BusinessAdvisor',
-        greeting: 'Ready to take your business to the next level?',
-        description: 'With expertise in business strategy, market analysis, and operational efficiency, I provide guidance for entrepreneurs and business leaders. Whether you\'re starting a new venture, scaling operations, or pivoting your business model, I offer insights backed by proven frameworks and real-world experience.',
-        tags: ['business', 'strategy', 'consulting', 'entrepreneurship', 'growth']
-    }
-];
-
-
-// Mock API call - Replace with real API
-const mockFetchTags = async (query: string, selectedTags: string[]): Promise<string[]> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    const allTags = [
-        'coding', 'technical', 'writing', 'creative', 'business', 'strategy',
-        'wellness', 'coaching', 'data', 'marketing', 'fitness', 'finance',
-        'javascript', 'python', 'react', 'nodejs', 'typescript', 'java',
-        'design', 'ux', 'ui', 'frontend', 'backend', 'fullstack',
-        'ai', 'machine-learning', 'deep-learning', 'nlp', 'computer-vision',
-        'blockchain', 'cryptocurrency', 'web3', 'smart-contracts',
-        'cloud', 'aws', 'azure', 'gcp', 'devops', 'kubernetes',
-        'mobile', 'ios', 'android', 'flutter', 'react-native',
-        'database', 'sql', 'nosql', 'mongodb', 'postgresql',
-        'testing', 'qa', 'automation', 'cypress', 'jest',
-        'agile', 'scrum', 'project-management', 'leadership',
-        'sales', 'customer-service', 'crm', 'saas',
-        'content-writing', 'copywriting', 'seo', 'social-media',
-        'photography', 'video-editing', 'animation', 'graphics',
-        'music', 'audio-production', 'sound-design',
-        'health', 'nutrition', 'mental-health', 'meditation',
-        'education', 'teaching', 'e-learning', 'tutoring',
-        'legal', 'law', 'contracts', 'compliance',
-        'accounting', 'bookkeeping', 'tax', 'audit',
-        'hr', 'recruiting', 'talent-acquisition', 'employee-relations'
-    ];
-
-    return allTags
-        .filter(tag =>
-            tag.toLowerCase().includes(query.toLowerCase()) &&
-            !selectedTags.includes(tag)
-        )
-        .slice(0, 10); // Limit to 10 suggestions
-};
+import TagPicker from '../features/personas/TagPicker';
+import { Tag } from '../utils/Tag';
+import { Persona } from '../utils/Persona';
+import { mergeArraysOfObjects } from '../utils/utils';
 
 export default function MainPage() {
     const { t } = useTranslation();
@@ -84,37 +21,33 @@ export default function MainPage() {
     const [isFilterMode, setIsFilterMode] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [questionInput, setQuestionInput] = useState('');
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
-    const [toAskList, setToAskList] = useState<string[]>([]);
-    const [filteredPersonas, setFilteredPersonas] = useState(mockPersonas);
+    const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+    const [toAskList, setToAskList] = useState<Persona[]>([]);
+    const [filteredPersonas, setFilteredPersonas] = useState<Persona[]>([]);
     const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
 
     const handleFilterToggle = () => {
         setIsFilterMode(!isFilterMode);
         if (!isFilterMode) {
-            // Entering filter mode - reset search
             setSearchQuery('');
         }
     };
 
-    const handleTagToggle = (tags: string[]) => {
+    const handleTagToggle = (tags: Tag[]) => {
         setSelectedTags(tags);
     };
 
-    const handleToggleToAskList = (personaId: string) => {
+    const handleToggleToAskList = (persona: Persona) => {
         setToAskList(prev =>
-            prev.includes(personaId)
-                ? prev.filter(id => id !== personaId)
-                : [...prev, personaId]
+            prev.find((q) => q.id === persona.id)
+                ? prev.filter(q => q.id !== persona.id)
+                : [...prev, persona]
         );
     };
 
-    const handleBulkToggleToAskList = (personaIds: string[]) => {
+    const handleBulkToggleToAskList = (personas: Persona[]) => {
         setToAskList(prev => {
-            // Merge arrays and then create a Set to remove duplicates.
-            const combinedArray = [...prev, ...personaIds];
-            const uniqueElementsSet = new Set(combinedArray);
-            return [...uniqueElementsSet];
+            return mergeArraysOfObjects(prev, personas)
         })
     };
 
@@ -138,25 +71,6 @@ export default function MainPage() {
     const handleBackToQuestion = () => {
         setIsFilterMode(false);
     };
-
-    React.useEffect(() => {
-        let filtered = mockPersonas;
-
-        if (searchQuery) {
-            filtered = filtered.filter(p =>
-                p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                p.description.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-        }
-
-        if (selectedTags.length > 0) {
-            filtered = filtered.filter(p =>
-                p.tags.some(tag => selectedTags.includes(tag))
-            );
-        }
-
-        setFilteredPersonas(filtered);
-    }, [searchQuery, selectedTags]);
 
     return (
         <AnimatePresence mode="wait">
@@ -226,10 +140,9 @@ export default function MainPage() {
                             >
                                 <h3 className="text-sm font-semibold text-gray-700 mb-3">Selected Personas:</h3>
                                 <div className="flex flex-wrap gap-2">
-                                    {toAskList.map((id, index) => {
-                                        const persona = mockPersonas.find(p => p.id === id);
+                                    {toAskList.map((persona, index) => {
                                         return persona ? (
-                                            <PersonaChip key={id} persona={persona} onRemove={handleToggleToAskList} animationDelay={index * 0.05} />
+                                            <PersonaChip key={persona.id} persona={persona} onRemove={handleToggleToAskList} animationDelay={index * 0.05} />
                                         ) : null;
                                     })}
                                 </div>
@@ -299,8 +212,7 @@ export default function MainPage() {
                         transition={{ delay: 0.1 }}
                         className="max-w-7xl mx-auto px-6 mt-6"
                     >
-                        {/* Tag Filters */}
-                        <TagFilter selectedTags={selectedTags} onTagsChange={handleTagToggle} onFetchTags={mockFetchTags} />
+                        <TagPicker selectedTags={selectedTags} onTagPicked={handleTagToggle} />
 
                         <PersonaGrid personas={filteredPersonas} selectedPersonas={toAskList} onToggleSelect={handleToggleToAskList} onAddAllFiltered={handleBulkToggleToAskList} />
                     </motion.div>

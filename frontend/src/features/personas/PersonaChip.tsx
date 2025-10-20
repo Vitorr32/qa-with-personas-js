@@ -6,7 +6,7 @@ import Avatar from './Avatar';
 
 interface PersonaChipProps {
     persona: Persona;
-    onRemove: (personaId: string) => void;
+    onRemove: (personaId: Persona) => void;
     animationDelay?: number;
 }
 
@@ -48,7 +48,7 @@ export default function PersonaChip({
 
             {/* Remove Button */}
             <button
-                onClick={() => onRemove(persona.id)}
+                onClick={() => onRemove(persona)}
                 className="flex-shrink-0 p-1 hover:bg-white/20 rounded-full transition-colors"
                 aria-label={`Remove ${persona.name}`}
             >

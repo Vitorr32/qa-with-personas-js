@@ -1,3 +1,5 @@
+import { Persona } from "./Persona";
+
 const AVATAR_COLORS = [
     { bg: '#3B82F6', text: '#FFFFFF' }, // Blue
     { bg: '#8B5CF6', text: '#FFFFFF' }, // Purple
@@ -82,11 +84,27 @@ export function generateAvatarData(name: string): {
 }
 
 export function getAvatarUrl(avatarPath: string | undefined): string | undefined {
-    console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
-    console.log('avatarPath:', avatarPath);
+    // If none provided, return undefined
     if (!avatarPath) return undefined;
+
+    // If it's already an absolute URL, return as-is
     if (avatarPath.startsWith('http://') || avatarPath.startsWith('https://')) {
         return avatarPath;
     }
-    return `${import.meta.env.VITE_API_BASE_URL || ''}/${avatarPath.replace(/^\/+/, '')}`;
+
+    // Normalize backslashes to forward slashes (Windows paths may have backslashes)
+    let normalized = avatarPath.replace(/\\/g, '/');
+
+    // Remove any leading slashes to avoid '//' when joining with base URL
+    normalized = normalized.replace(/^\/+/, '');
+
+    const base = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+
+    if (!base) return `/${normalized}`; // relative path from current origin
+
+    return `${base}/${normalized}`;
+}
+
+export function getPersonaAvatar(persona: Persona) {
+
 }

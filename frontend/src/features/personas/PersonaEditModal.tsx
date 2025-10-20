@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useState } from 'react';
+import { Tag } from '../../utils/Tag';
 
 export default function EditPersonaModal({ persona, onClose, onSave }: any) {
     const [formData, setFormData] = useState(persona);
@@ -74,9 +75,9 @@ export default function EditPersonaModal({ persona, onClose, onSave }: any) {
                             </button>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                            {formData.tags.map((tag: string) => (
-                                <span key={tag} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm flex items-center gap-2">
-                                    {tag}
+                            {formData.tags.map((tag: Tag) => (
+                                <span key={tag.id} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm flex items-center gap-2">
+                                    {tag.name}
                                     <button onClick={() => setFormData({ ...formData, tags: formData.tags.filter((t: string) => t !== tag) })}>
                                         <X className="w-3 h-3" />
                                     </button>
