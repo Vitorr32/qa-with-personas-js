@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Info, X, Tag } from 'lucide-react';
 import { Persona } from '../../utils/Persona';
+import { getPersonaAvatar } from '../../utils/Avatar';
 
 interface PersonaCardProps {
     persona: Persona;
@@ -13,7 +14,7 @@ interface PersonaCardProps {
 
 export default function PersonaCard({ persona, isSelected, onToggleSelect, animationDelay = 0 }: PersonaCardProps) {
     const [showModal, setShowModal] = useState(false);
-    const displayAvatar = persona.avatar || getFallbackAvatar(persona.name);
+    const displayAvatar = getPersonaAvatar(persona);
     const displayTags = persona.tags.slice(0, 3);
     const hasMoreTags = persona.tags.length > 3;
 
@@ -47,21 +48,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                         {/* Avatar */}
                         <div className="flex-shrink-0">
-                            {persona.avatar ? (
-                                <img
-                                    src={persona.avatar}
-                                    alt={persona.name}
-                                    className="w-12 h-12 rounded-full object-cover"
-                                    onError={(e) => {
-                                        // Fallback if image fails to load
-                                        e.currentTarget.style.display = 'none';
-                                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                    }}
-                                />
-                            ) : null}
-                            <div className={persona.avatar ? 'hidden text-4xl' : 'text-4xl'}>
-                                {displayAvatar}
-                            </div>
+                            {displayAvatar}
                         </div>
 
                         {/* Name */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, X, Check, } from 'lucide-react';
@@ -13,6 +13,7 @@ import TagPicker from '../features/personas/TagPicker';
 import { Tag } from '../utils/Tag';
 import { Persona } from '../utils/Persona';
 import { mergeArraysOfObjects } from '../utils/utils';
+import { useGetPersonasQuery } from '../store/apiSlice';
 
 export default function MainPage() {
     const { t } = useTranslation();
@@ -214,7 +215,7 @@ export default function MainPage() {
                     >
                         <TagPicker selectedTags={selectedTags} onTagPicked={handleTagToggle} />
 
-                        <PersonaGrid personas={filteredPersonas} selectedPersonas={toAskList} onToggleSelect={handleToggleToAskList} onAddAllFiltered={handleBulkToggleToAskList} />
+                        <PersonaGrid selectedTags={selectedTags} searchQuery={searchQuery} selectedPersonas={toAskList} onToggleSelect={handleToggleToAskList} onAddAllFiltered={handleBulkToggleToAskList} />
                     </motion.div>
                 </motion.div>
             )}

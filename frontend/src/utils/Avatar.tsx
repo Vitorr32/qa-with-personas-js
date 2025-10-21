@@ -106,5 +106,13 @@ export function getAvatarUrl(avatarPath: string | undefined): string | undefined
 }
 
 export function getPersonaAvatar(persona: Persona) {
-
+    if (persona.avatar) {
+        const url = getAvatarUrl(persona.avatar);
+        return <img src={url} alt={persona.name} className="w-12 h-12 rounded-full object-cover" />
+    } else {
+        const avatarData = generateAvatarData(persona.name);
+        return <div className="w-12 h-12 block rounded-full flex items-center justify-center font-semibold text-white" style={{ backgroundColor: avatarData.backgroundColor, color: avatarData.textColor }}>
+            {avatarData.initials}
+        </div>;
+    }
 }

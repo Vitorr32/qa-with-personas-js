@@ -2,34 +2,81 @@ import { motion } from 'framer-motion';
 import { Check, Plus } from 'lucide-react';
 import { Persona } from '../../utils/Persona';
 import PersonaCard from './PersonaCard';
+import { use, useEffect, useMemo, useState } from 'react';
+import { Tag } from '../../utils/Tag';
+import { useGetPersonasQuery } from '../../store/apiSlice';
 
 interface PersonaGridProps {
-    personas: Persona[];
+    searchQuery: string;
+    selectedTags?: Tag[];
     selectedPersonas: Persona[];
     onToggleSelect: (personaId: Persona) => void;
     onAddAllFiltered: (personaIds: Persona[]) => void;
 }
 
 export default function PersonaGrid({
-    personas = [],
+    searchQuery,
+    selectedTags = [],
     selectedPersonas = [],
     onToggleSelect,
     onAddAllFiltered
 }: PersonaGridProps) {
 
-    const allFilteredSelected = personas.length > 0 &&
-        personas.every(p => selectedPersonas.find(q => p.id === q.id));
+    const [pageSize] = useState(20);
+    const [cursor, setCursor] = useState<string | undefined>(undefined);
+    const [items, setItems] = useState<Persona[]>([]);
+    const [hasMore, setHasMore] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const queryArgs = useMemo(() => ({
+        pageSize,
+        cursor,
+        inputQuery: searchQuery,
+        tags: selectedTags,
+        refreshKey,
+    }), [pageSize, cursor, searchQuery, selectedTags, refreshKey]);
+
+    const allFilteredSelected = useMemo(() => {
+        return items.length > 0 &&
+            items.every(p => selectedPersonas.find(q => p.id === q.id));
+    }, [items, selectedPersonas]);
+
+    const { data: personasPage, isLoading: loadingPersonas } = useGetPersonasQuery(queryArgs);
+
+    useEffect(() => {
+        if (!personasPage) return;
+
+        console.log('Fetched personasPage:', personasPage);
+
+        // personasPage might be the legacy array or the new paged shape
+        const newItems: Persona[] = Array.isArray(personasPage) ? personasPage : personasPage?.items || [];
+        const newHasMore = Array.isArray(personasPage) ? false : personasPage.hasMore;
+
+        // if cursor is undefined, it's the first page -> replace
+        if (!cursor) {
+            setItems(newItems);
+        } else {
+            setItems((prev) => [...prev, ...newItems]);
+        }
+        setHasMore(newHasMore);
+    }, [personasPage]);
+
+    // reset pagination when filters change
+    useEffect(() => {
+        setCursor(undefined);
+        setItems([]);
+        setRefreshKey((k) => k + 1);
+    }, [searchQuery, selectedTags]);
 
     return (
         <div>
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
-                    {personas.length} Persona{personas.length !== 1 ? 's' : ''} Found
+                    {items.length} Persona{items.length !== 1 ? 's' : ''} Found
                 </h3>
 
-                {personas.length > 0 && (
+                {items.length > 0 && (
                     <button
-                        onClick={() => onAddAllFiltered(personas)}
+                        onClick={() => onAddAllFiltered(items)}
                         disabled={allFilteredSelected}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${allFilteredSelected
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -52,9 +99,9 @@ export default function PersonaGrid({
             </div>
 
             {/* Grid */}
-            {personas.length > 0 ? (
+            {items.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {personas.map((persona, index) => (
+                    {items.map((persona, index) => (
                         <PersonaCard
                             key={persona.id}
                             persona={persona}
