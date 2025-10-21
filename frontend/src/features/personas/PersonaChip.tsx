@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Persona } from '../../utils/Persona';
-import Avatar from './Avatar';
+import { getPersonaAvatar } from '../../utils/Avatar';
 
 interface PersonaChipProps {
     persona: Persona;
@@ -25,20 +25,7 @@ export default function PersonaChip({
         >
             {/* Avatar */}
             <div className="flex-shrink-0">
-                {persona.avatar ? (
-                    <img
-                        src={persona.avatar}
-                        alt={persona.name}
-                        className="w-6 h-6 rounded-full object-cover border-2 border-white/30"
-                        onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                        }}
-                    />
-                ) : null}
-                <div className={persona.avatar ? 'hidden text-lg' : 'text-lg'}>
-                    <Avatar name={persona.name} imageUrl={persona.avatar} />
-                </div>
+                {getPersonaAvatar(persona, 8)}
             </div>
 
             {/* Name */}

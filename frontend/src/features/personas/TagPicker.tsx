@@ -129,7 +129,7 @@ export default function TagPicker({ selectedTags = [], onTagPicked, title, allow
     };
 
     return (
-        <div className="mb-8">
+        <>
             {title && (
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <TagIcon className="w-5 h-5 text-blue-600" />
@@ -169,7 +169,7 @@ export default function TagPicker({ selectedTags = [], onTagPicked, title, allow
 
             {/* Autocomplete Input */}
             <div className="relative">
-                <div className="relative bg-white rounded-xl border-2 border-gray-200 focus-within:border-blue-500 transition-colors">
+                <div className="relative bg-white rounded-xl border-2 border-gray-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-colors">
                     <div className="flex items-center px-4 py-3">
                         <Search className="w-5 h-5 text-gray-400 mr-3" />
                         <input
@@ -182,7 +182,7 @@ export default function TagPicker({ selectedTags = [], onTagPicked, title, allow
                                 if (suggestions.length > 0) setShowDropdown(true);
                             }}
                             placeholder="Type to search tags..."
-                            className="flex-1 text-base outline-none text-gray-800 placeholder-gray-400"
+                            className="flex-1 text-base outline-none"
                             aria-autocomplete="list"
                             aria-expanded={showDropdown}
                         />
@@ -247,6 +247,6 @@ export default function TagPicker({ selectedTags = [], onTagPicked, title, allow
                     <p className="text-sm text-gray-500 mt-2">No tags found matching "{inputValue}"</p>
                 )}
             </div>
-        </div>
+        </>
     );
 }

@@ -1,13 +1,13 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
 import { Persona } from '../../utils/Persona';
-import { LoaderPinwheel, Search } from 'lucide-react';
+import { LoaderPinwheel } from 'lucide-react';
 import PersonaCardEdit from '../personas/PersonaCardEdit';
 import EditPersonaModal from '../personas/PersonaEditModal';
 import { useGetPersonasQuery, useUpdatePersonaMutation } from '../../store/apiSlice';
 import { Tag } from '../../utils/Tag';
 import { errorToast, successToast } from '../../utils/Toasts';
-import TagPicker from '../personas/TagPicker';
+import SearchBox from '../utils/SearchBox';
 
 export default function PersonaEdit() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -92,22 +92,7 @@ export default function PersonaEdit() {
                         <p className="text-gray-600">Search and modify existing personas</p>
                     </div>
 
-                    {/* Search and Filters */}
-                    <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-lg space-y-4">
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search by name or description..."
-                                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                            />
-                        </div>
-
-                        {/* Tag Filters */}
-                        <TagPicker selectedTags={selectedTags} onTagPicked={(tags) => setSelectedTags(tags)} />
-                    </div>
+                    <SearchBox setSearchQuery={setSearchQuery} setSelectedTags={setSelectedTags} searchQuery={searchQuery} selectedTags={selectedTags} injectWrapperClassNames="bg-white rounded-xl p-6 border border-gray-200 shadow-lg" />
 
                     {/* Personas Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

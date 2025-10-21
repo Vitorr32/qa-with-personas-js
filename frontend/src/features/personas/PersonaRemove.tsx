@@ -1,21 +1,98 @@
 import { motion } from "framer-motion"
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Persona } from "../../utils/Persona";
-import { AlertTriangle, Search, Trash2 } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import PersonaCardRemove from "./PersonaCardRemove";
+import { Tag } from "../../utils/Tag";
+import SearchBox from "../utils/SearchBox";
+import { useDeletePersonaMutation, useGetPersonasQuery } from "../../store/apiSlice";
+import { errorToast, successToast } from "../../utils/Toasts";
+import LoadingContainer from "../utils/LoadingContainer";
 
-export default function RemovePersonasSection({ personas, searchQuery, setSearchQuery, selectedTags, setSelectedTags, allTags, selectedPersonas, setSelectedPersonas, onRemove }: any) {
+export default function RemovePersonasSection() {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+    const [toDeleteList, setToDeleteList] = useState<Persona[]>([]);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-    const handleToggleSelect = (id: string) => {
-        setSelectedPersonas((prev: string[]) =>
-            prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
-        );
-    };
+    const [pageSize] = useState(20);
+    const [cursor, setCursor] = useState<string | undefined>(undefined);
+    const [items, setItems] = useState<Persona[]>([]);
+    const [hasMore, setHasMore] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
 
-    const handleSelectAll = () => {
-        setSelectedPersonas(personas.map((p: Persona) => p.id));
-    };
+    const queryArgs = useMemo(() => ({
+        pageSize,
+        cursor,
+        inputQuery: searchQuery,
+        tags: selectedTags,
+        refreshKey,
+    }), [pageSize, cursor, searchQuery, selectedTags, refreshKey]);
+
+    const { data: personasPage, isLoading: isLoadingPersonas, refetch } = useGetPersonasQuery(queryArgs);
+    const [deletePersona] = useDeletePersonaMutation();
+
+    async function handleDelete(personas: Persona[]) {
+        if (!personas || personas.length === 0) return;
+
+        try {
+            // Call the mutation with Persona[]; apiSlice will extract ids
+            const res = await deletePersona(personas).unwrap();
+
+            // Remove deleted personas from local items for immediate UI feedback
+            const deletedIds = (personas || []).map((p) => p.id);
+            setItems((prev) => prev.filter((p) => !deletedIds.includes(p.id)));
+            // Clear selection entirely since deleted personas are gone
+            setToDeleteList([]);
+
+            // Bump local refreshKey and refetch the query so components update
+            setRefreshKey((k) => k + 1);
+            refetch();
+
+            successToast(`${deletedIds.length} persona${deletedIds.length !== 1 ? 's' : ''} removed`);
+            return res;
+        } catch (err: any) {
+            console.error('Failed to delete personas', err);
+            const message = err?.data?.message || err?.message || 'Failed to delete personas';
+            errorToast(message);
+            throw err;
+        }
+    }
+
+    function handleToggleSelect(persona: Persona) {
+        const personaIndex = toDeleteList.findIndex((p) => p.id === persona.id);
+        if (personaIndex >= 0) {
+            const updatedSelection = [...toDeleteList];
+            updatedSelection.splice(personaIndex, 1);
+            setToDeleteList(updatedSelection);
+        } else {
+            setToDeleteList((prev) => [...prev, persona]);
+        }
+    }
+
+    // Update items when a new page arrives
+    useEffect(() => {
+        if (!personasPage) return;
+
+        // personasPage might be the legacy array or the new paged shape
+        const newItems: Persona[] = Array.isArray(personasPage) ? (personasPage as unknown as Persona[]) : (personasPage as any).items || [];
+        const newHasMore = Array.isArray(personasPage) ? false : Boolean((personasPage as any).hasMore);
+
+        // if cursor is undefined, it's the first page -> replace
+        if (!cursor) {
+            setItems(newItems);
+        } else {
+            setItems((prev) => [...prev, ...newItems]);
+        }
+        setHasMore(newHasMore);
+    }, [personasPage]);
+
+    // reset pagination when filters change
+    useEffect(() => {
+        setCursor(undefined);
+        setItems([]);
+        setRefreshKey((k) => k + 1);
+    }, [searchQuery, selectedTags]);
 
     return (
         <motion.div
@@ -26,85 +103,86 @@ export default function RemovePersonasSection({ personas, searchQuery, setSearch
         >
             <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Remove Personas</h2>
-                <p className="text-gray-600">Select and remove personas (bulk operation supported)</p>
+                <p className="text-gray-600">Select and remove personas</p>
             </div>
 
-            {/* Search and Filters */}
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-lg space-y-4">
-                <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search by name or description..."
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    />
-                </div>
+            <SearchBox setSearchQuery={setSearchQuery} setSelectedTags={setSelectedTags} searchQuery={searchQuery} selectedTags={selectedTags} injectWrapperClassNames="bg-white rounded-xl p-6 border border-gray-200 shadow-lg" />
 
-                {allTags.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                        {allTags.map((tag: string) => (
-                            <button
-                                key={tag}
-                                onClick={() => setSelectedTags((prev: string[]) =>
-                                    prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-                                )}
-                                className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${selectedTags.includes(tag)
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                            >
-                                {tag}
-                            </button>
+            <LoadingContainer isLoading={isLoadingPersonas}>
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                        {items.length} Persona{items.length !== 1 ? 's' : ''} Found
+                    </h3>
+
+                    <button
+                        onClick={() => setShowConfirmModal(true)}
+                        disabled={toDeleteList.length === 0}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium cursor-pointer transition-all ${toDeleteList.length === 0
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-200'
+                            }`}
+                    >
+                        {toDeleteList.length === 0 ? (
+                            <>
+                                <AlertTriangle className="w-4 h-4" />
+                                No Personas Selected
+                            </>
+                        ) : (
+                            <>
+                                <AlertTriangle className="w-4 h-4" />
+                                Remove {toDeleteList.length} Persona{toDeleteList.length !== 1 ? 's' : ''}
+                            </>
+                        )}
+                    </button>
+
+                </div>
+                {items.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {items.map((persona: Persona) => (
+                            <PersonaCardRemove
+                                key={persona.id}
+                                persona={persona}
+                                isSelected={toDeleteList.find(p => p.id === persona.id) !== undefined}
+                                onToggle={() => handleToggleSelect(persona)}
+                            />
                         ))}
                     </div>
                 )}
 
-                <div className="flex items-center justify-between pt-2">
-                    <span className="text-sm text-gray-600">{selectedPersonas.length} selected</span>
-                    <div className="flex gap-2">
-                        <button onClick={handleSelectAll} className="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                            Select All
-                        </button>
+                {items.length === 0 && !isLoadingPersonas && (
+                    <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
+                        <div className="text-4xl mb-2">🔍</div>
+                        <p className="text-gray-600">No personas found</p>
+                    </div>
+                )}
+
+                {/* Load more */}
+                {hasMore && (
+                    <div className="flex justify-center mt-4">
                         <button
-                            onClick={() => setShowConfirmModal(true)}
-                            disabled={selectedPersonas.length === 0}
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            onClick={() => {
+                                // set cursor to last item of current items to fetch next page
+                                const last = items[items.length - 1];
+                                if (!last) return;
+                                const createdAtVal: any = (last as any).createdAt;
+                                const createdAtStr = createdAtVal instanceof Date ? createdAtVal.toISOString() : String(createdAtVal);
+                                setCursor(`${createdAtStr}|${last.id}`);
+                            }}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md"
                         >
-                            <Trash2 className="w-4 h-4" />
-                            Remove Selected
+                            Load more
                         </button>
                     </div>
-                </div>
-            </div>
-
-            {/* Personas Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {personas.map((persona: Persona) => (
-                    <PersonaCardRemove
-                        key={persona.id}
-                        persona={persona}
-                        isSelected={selectedPersonas.includes(persona.id)}
-                        onToggle={() => handleToggleSelect(persona.id)}
-                    />
-                ))}
-            </div>
-
-            {personas.length === 0 && (
-                <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-                    <div className="text-4xl mb-2">🔍</div>
-                    <p className="text-gray-600">No personas found</p>
-                </div>
-            )}
+                )}
+            </LoadingContainer>
 
             {/* Confirm Modal */}
             {showConfirmModal && (
                 <ConfirmRemoveModal
-                    count={selectedPersonas.length}
-                    personaNames={personas.filter((p: Persona) => selectedPersonas.includes(p.id)).map((p: Persona) => p.name)}
+                    count={toDeleteList.length}
+                    personaNames={toDeleteList.map((p: Persona) => p.name)}
                     onConfirm={() => {
-                        onRemove(selectedPersonas);
+                        void handleDelete(toDeleteList);
                         setShowConfirmModal(false);
                     }}
                     onCancel={() => setShowConfirmModal(false)}

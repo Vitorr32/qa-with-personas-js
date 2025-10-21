@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Info, X, Tag } from 'lucide-react';
 import { Persona } from '../../utils/Persona';
 import { getPersonaAvatar } from '../../utils/Avatar';
+import TagChipList from '../utils/TagChipList';
 
 interface PersonaCardProps {
     persona: Persona;
@@ -14,7 +15,6 @@ interface PersonaCardProps {
 
 export default function PersonaCard({ persona, isSelected, onToggleSelect, animationDelay = 0 }: PersonaCardProps) {
     const [showModal, setShowModal] = useState(false);
-    const displayAvatar = getPersonaAvatar(persona);
     const displayTags = persona.tags.slice(0, 3);
     const hasMoreTags = persona.tags.length > 3;
 
@@ -48,7 +48,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                         {/* Avatar */}
                         <div className="flex-shrink-0">
-                            {displayAvatar}
+                            {getPersonaAvatar(persona)}
                         </div>
 
                         {/* Name */}
@@ -76,29 +76,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
 
                 {/* Tags and Details Button */}
                 <div className="flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1 flex-1">
-                        {displayTags.map((tag, index) => (
-                            <span
-                                key={tag.id}
-                                className={`px-2 py-1 text-xs rounded-full font-medium ${isSelected
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'bg-gray-100 text-gray-700'
-                                    }`}
-                            >
-                                {tag.name}
-                            </span>
-                        ))}
-                        {hasMoreTags && (
-                            <span
-                                className={`px-2 py-1 text-xs rounded-full font-medium ${isSelected
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'bg-gray-100 text-gray-700'
-                                    }`}
-                            >
-                                +{persona.tags.length - 3}
-                            </span>
-                        )}
-                    </div>
+                    <TagChipList tags={displayTags} />
 
                     {/* Details Button */}
                     <button
@@ -139,22 +117,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
 
                                 <div className="flex items-center gap-4">
                                     {/* Avatar */}
-                                    <div className="flex-shrink-0">
-                                        {persona.avatar ? (
-                                            <img
-                                                src={persona.avatar}
-                                                alt={persona.name}
-                                                className="w-20 h-20 rounded-full object-cover border-4 border-white/30"
-                                                onError={(e) => {
-                                                    e.currentTarget.style.display = 'none';
-                                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                                }}
-                                            />
-                                        ) : null}
-                                        <div className={persona.avatar ? 'hidden text-6xl' : 'text-6xl'}>
-                                            {displayAvatar}
-                                        </div>
-                                    </div>
+                                    {getPersonaAvatar(persona)}
 
                                     <div className="flex-1">
                                         <h2 className="text-3xl font-bold mb-2">{persona.name}</h2>

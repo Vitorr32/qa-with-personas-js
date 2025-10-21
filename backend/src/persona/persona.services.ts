@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Persona } from './persona.entity';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -164,6 +164,25 @@ export class PersonasService {
             await this.deleteAvatar(persona.avatar);
         }
         await this.personaRepo.remove(persona);
+    }
+
+    /**
+     * Remove many personas by their ids. Deletes associated avatar files when present.
+     */
+    async removeMany(ids: string[]): Promise<{ deleted: number }> {
+        if (!ids || ids.length === 0) return { deleted: 0 };
+
+        // Find existing personas so we can delete avatars and then remove correctly
+        const personas = await this.personaRepo.find({ where: { id: In(ids) } });
+        for (const p of personas) {
+            if (p.avatar) {
+                await this.deleteAvatar(p.avatar);
+            }
+        }
+
+        // Use delete for efficiency if we don't need entity listeners; ensure we only delete found ids
+        const result = await this.personaRepo.delete(personas.map((p) => p.id));
+        return { deleted: result.affected ?? 0 };
     }
 
     private async saveAvatar(file: Express.Multer.File): Promise<string> {

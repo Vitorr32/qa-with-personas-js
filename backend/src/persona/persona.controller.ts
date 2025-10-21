@@ -62,4 +62,33 @@ export class PersonasController {
     remove(@Param('id') id: string) {
         return this.personasService.remove(id);
     }
+
+    @Delete()
+    async removeMany(@Body('ids') ids?: any, @Body() body?: any) {
+        // Accept various shapes: array, JSON-string, or comma-separated string
+        const raw = ids ?? (body && body.ids) ?? body;
+
+        let idArray: string[] = [];
+        if (Array.isArray(raw)) {
+            idArray = raw.map(String);
+        } else if (typeof raw === 'string') {
+            try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) idArray = parsed.map(String);
+                else idArray = String(parsed).split(',').map((s) => s.trim()).filter(Boolean);
+            } catch {
+                idArray = raw.split(',').map((s) => s.trim()).filter(Boolean);
+            }
+        } else if (raw && typeof raw === 'object') {
+            const maybeIds = (raw as any).ids;
+            if (Array.isArray(maybeIds)) idArray = maybeIds.map(String);
+            else if (typeof maybeIds === 'string') idArray = maybeIds.split(',').map((s) => s.trim()).filter(Boolean);
+        }
+
+        if (!idArray || idArray.length === 0) {
+            throw new BadRequestException('No persona IDs provided for deletion');
+        }
+
+        return this.personasService.removeMany(idArray);
+    }
 }

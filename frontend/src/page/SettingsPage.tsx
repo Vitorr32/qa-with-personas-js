@@ -1,45 +1,19 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Plus, Trash2, X, Edit2, Menu } from 'lucide-react';
-import { Persona } from '../utils/Persona';
 import PromptsEditor from '../features/settings/PromptsEditor';
 import PersonaEdit from '../features/settings/PersonaEdit';
 import AddPersonaSection from '../features/personas/PersonaAdd';
 import RemovePersonasSection from '../features/personas/PersonaRemove';
-import { useDispatch } from 'react-redux';
 
 type SettingsSection = 'prompts' | 'edit' | 'add' | 'remove';
 
 function SettingsPage() {
-    const dispatch = useDispatch();
     const [activeSection, setActiveSection] = useState<SettingsSection>('prompts');
-    const [mainPrompt, setMainPrompt] = useState('You are a helpful AI assistant.');
-    const [analystPrompt, setAnalystPrompt] = useState('Analyze the responses and provide insights.');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
-    const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(true);
 
-    // Mock data
-    const [personas, setPersonas] = useState<Persona[]>([
-        { id: '1', name: 'Code Expert', greeting: 'Hello! Ready to code?', description: 'Specialized in software development', tags: ['coding', 'technical'] },
-        { id: '2', name: 'Creative Writer', greeting: 'Let\'s create something!', description: 'Storytelling expert', tags: ['writing', 'creative'] },
-        { id: '3', name: 'Business Advisor', greeting: 'Let\'s grow your business!', description: 'Business strategy consultant', tags: ['business', 'strategy'] },
-    ]);
-
-    const allTags = Array.from(new Set(personas.flatMap(p => p.tags)));
-
-    const filteredPersonas = personas.filter(p => {
-        const matchesSearch = !searchQuery ||
-            p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            p.description.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesTags = selectedTags.length === 0 ||
-            selectedTags.some(tag => p.tags.includes(tag));
-        return matchesSearch && matchesTags;
-    });
-
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50" style={{ minHeight: 'calc(100vh - 73px)' }}>
             <div className="flex max-w-7xl mx-auto">
                 <button
                     onClick={() => setIsMobileMenuOpen(true)}
@@ -102,22 +76,7 @@ function SettingsPage() {
                         {activeSection === 'prompts' && (<PromptsEditor />)}
                         {activeSection === 'edit' && (<PersonaEdit />)}
                         {activeSection === 'add' && (<AddPersonaSection />)}
-                        {activeSection === 'remove' && (
-                            <RemovePersonasSection
-                                personas={filteredPersonas}
-                                searchQuery={searchQuery}
-                                setSearchQuery={setSearchQuery}
-                                selectedTags={selectedTags}
-                                setSelectedTags={setSelectedTags}
-                                allTags={allTags}
-                                selectedPersonas={selectedPersonas}
-                                setSelectedPersonas={setSelectedPersonas}
-                                onRemove={(ids: string[]) => {
-                                    setPersonas(prev => prev.filter(p => !ids.includes(p.id)));
-                                    setSelectedPersonas([]);
-                                }}
-                            />
-                        )}
+                        {activeSection === 'remove' && (<RemovePersonasSection />)}
                     </AnimatePresence>
                 </main>
             </div>
@@ -125,7 +84,6 @@ function SettingsPage() {
     );
 }
 
-// Side Menu Item
 function SideMenuItem({ icon, label, active, onClick }: any) {
     return (
         <button
@@ -140,14 +98,5 @@ function SideMenuItem({ icon, label, active, onClick }: any) {
         </button>
     );
 }
-
-// 3. ADD PERSONA SECTION
-
-
-// 4. REMOVE PERSONAS SECTION
-
-
-
-
 
 export default SettingsPage;

@@ -91,6 +91,56 @@ export const apiSlice = createApi({
             query: (prompts: Partial<Prompt>) => ({ url: '/prompts', method: 'PUT', body: prompts }),
             invalidatesTags: [{ type: 'Prompts', id: 'SINGLE' }],
         }),
+
+        deletePersona: builder.mutation<
+            { deleted?: number } | void,
+            Persona | Persona[] | { ids: string[] }
+        >({
+            query: (arg) => {
+                // If arg is an array, it may be Persona[] or string[]; extract ids accordingly
+                if (Array.isArray(arg)) {
+                    if (arg.length === 0) return { url: '/personas', method: 'DELETE', body: {} };
+                    const first = arg[0];
+                    // array of Persona objects
+                    if (first && typeof first === 'object' && 'id' in first) {
+                        const ids = arg.map((p) => p.id);
+                        return { url: '/personas', method: 'DELETE', body: { ids } };
+                    }
+                    // fallback: array of ids
+                    return { url: '/personas', method: 'DELETE', body: { ids: arg as any } };
+                }
+
+                // Single Persona object with id -> delete via route
+                if (arg && typeof arg === 'object' && 'id' in arg && typeof arg.id === 'string') {
+                    return { url: `/personas/${(arg as any).id}`, method: 'DELETE' };
+                }
+
+                // fallback
+                return { url: '/personas', method: 'DELETE', body: {} };
+            },
+            invalidatesTags: (_result, _error, arg) => {
+                if (Array.isArray(arg)) {
+                    const first = arg[0] as any;
+                    if (first && typeof first === 'object' && 'id' in first) {
+                        const ids = (arg as Persona[]).map((p) => p.id);
+                        return [{ type: 'Personas' as const, id: 'LIST' }, ...ids.map((id) => ({ type: 'Personas' as const, id }))];
+                    }
+                    // fallback: array of ids
+                    return [{ type: 'Personas' as const, id: 'LIST' }, ...((arg as any) || []).map((id: string) => ({ type: 'Personas' as const, id }))];
+                }
+
+                if (arg && typeof arg === 'object' && 'id' in arg && typeof (arg as any).id === 'string') {
+                    return [{ type: 'Personas' as const, id: 'LIST' }, { type: 'Personas' as const, id: (arg as any).id }];
+                }
+
+                if (arg && typeof arg === 'object' && Array.isArray((arg as any).ids)) {
+                    const ids = (arg as any).ids as string[];
+                    return [{ type: 'Personas' as const, id: 'LIST' }, ...ids.map((id) => ({ type: 'Personas' as const, id }))];
+                }
+
+                return [{ type: 'Personas' as const, id: 'LIST' }];
+            },
+        }),
     }),
 })
 
@@ -98,6 +148,7 @@ export const {
     useGetPersonasQuery,
     useAddPersonaMutation,
     useUpdatePersonaMutation,
+    useDeletePersonaMutation,
     useGetTagsQuery,
     useGetPromptsQuery,
     useUpdatePromptsMutation,

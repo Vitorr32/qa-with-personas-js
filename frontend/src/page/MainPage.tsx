@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, X, Check, } from 'lucide-react';
+import { Filter, Check, } from 'lucide-react';
 
 import QuestionInput from '../features/chat/QuestionInput';
 import PersonaGrid from '../features/personas/PersonaGrid';
@@ -9,11 +9,10 @@ import PersonaChip from '../features/personas/PersonaChip';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from '@tanstack/react-router';
 import { setQuestion, setFiles, setPersonas, setTags } from '../store/questionSlice';
-import TagPicker from '../features/personas/TagPicker';
 import { Tag } from '../utils/Tag';
 import { Persona } from '../utils/Persona';
 import { mergeArraysOfObjects } from '../utils/utils';
-import { useGetPersonasQuery } from '../store/apiSlice';
+import SearchBox from '../features/utils/SearchBox';
 
 export default function MainPage() {
     const { t } = useTranslation();
@@ -24,7 +23,6 @@ export default function MainPage() {
     const [questionInput, setQuestionInput] = useState('');
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     const [toAskList, setToAskList] = useState<Persona[]>([]);
-    const [filteredPersonas, setFilteredPersonas] = useState<Persona[]>([]);
     const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
 
     const handleFilterToggle = () => {
@@ -183,26 +181,7 @@ export default function MainPage() {
                             </div>
 
                             {/* Search Box */}
-                            <div className="relative bg-gray-50 rounded-xl border border-gray-200">
-                                <div className="flex items-center px-4 py-3">
-                                    <Search className="w-5 h-5 text-gray-400 mr-3" />
-                                    <input
-                                        type="text"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder="Search personas by name or description..."
-                                        className="flex-1 text-base outline-none bg-transparent text-gray-800 placeholder-gray-400"
-                                    />
-                                    {searchQuery && (
-                                        <button
-                                            onClick={() => setSearchQuery('')}
-                                            className="p-1 hover:bg-gray-200 rounded transition-colors"
-                                        >
-                                            <X className="w-4 h-4 text-gray-500" />
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
+                            <SearchBox setSearchQuery={setSearchQuery} searchQuery={searchQuery} selectedTags={selectedTags} setSelectedTags={setSelectedTags} />
                         </div>
                     </motion.div>
 
@@ -213,8 +192,6 @@ export default function MainPage() {
                         transition={{ delay: 0.1 }}
                         className="max-w-7xl mx-auto px-6 mt-6"
                     >
-                        <TagPicker selectedTags={selectedTags} onTagPicked={handleTagToggle} />
-
                         <PersonaGrid selectedTags={selectedTags} searchQuery={searchQuery} selectedPersonas={toAskList} onToggleSelect={handleToggleToAskList} onAddAllFiltered={handleBulkToggleToAskList} />
                     </motion.div>
                 </motion.div>

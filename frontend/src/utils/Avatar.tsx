@@ -1,3 +1,4 @@
+import { JSX } from "react";
 import { Persona } from "./Persona";
 
 const AVATAR_COLORS = [
@@ -105,13 +106,13 @@ export function getAvatarUrl(avatarPath: string | undefined): string | undefined
     return `${base}/${normalized}`;
 }
 
-export function getPersonaAvatar(persona: Persona) {
+export function getPersonaAvatar(persona: Persona, size = 12): JSX.Element {
     if (persona.avatar) {
         const url = getAvatarUrl(persona.avatar);
-        return <img src={url} alt={persona.name} className="w-12 h-12 rounded-full object-cover" />
+        return <img src={url} alt={persona.name} className={`w-${size} h-${size} rounded-full object-cover`} />
     } else {
         const avatarData = generateAvatarData(persona.name);
-        return <div className="w-12 h-12 block rounded-full flex items-center justify-center font-semibold text-white" style={{ backgroundColor: avatarData.backgroundColor, color: avatarData.textColor }}>
+        return <div className={`w-${size} h-${size} block rounded-full flex items-center justify-center font-semibold text-white`} style={{ backgroundColor: avatarData.backgroundColor, color: avatarData.textColor }}>
             {avatarData.initials}
         </div>;
     }
