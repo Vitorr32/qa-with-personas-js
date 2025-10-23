@@ -1,11 +1,21 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import OpenAI from "openai";
+import { APIPromise } from 'openai';
 
 @Injectable()
 export class OpenAIService {
   private readonly logger = new Logger(OpenAIService.name);
+  private openaiClient: OpenAI;
 
   private get apiKey(): string | undefined {
     return process.env.OPENAI_API_KEY;
+  }
+
+  constructor(private configService: ConfigService) {
+    this.openaiClient = new OpenAI({
+      apiKey: this.configService.get<string>('OPENAI_API_KEY')
+    });
   }
 
   /**
@@ -18,30 +28,11 @@ export class OpenAIService {
       throw new InternalServerErrorException('OpenAI API key not configured');
     }
 
-    // Use the global fetch available in modern Node versions. This avoids adding
-    // a dependency such as node-fetch. The response body may be a WHATWG stream
-    // or a Node stream depending on the runtime.
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify(payload),
-      signal,
-    } as any);
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => '<no body>');
-      this.logger.error(`OpenAI responded with ${res.status}: ${text}`);
-      throw new InternalServerErrorException('OpenAI API error');
-    }
-
-    return res;
+    return this.openaiClient.chat.completions.create(payload, { signal });
   }
 
   /** Upload a file to OpenAI and return the parsed JSON response. Expects an Express file (multer). */
-  async uploadFile(file: Express.Multer.File, purpose = 'answers'): Promise<any> {
+  async uploadFile(file: Express.Multer.File, purpose = 'user_data'): Promise<any> {
     if (!this.apiKey) {
       this.logger.error('OPENAI_API_KEY not set');
       throw new InternalServerErrorException('OpenAI API key not configured');
@@ -54,6 +45,10 @@ export class OpenAIService {
     const blob = new Blob([arr], { type: file.mimetype });
     form.append('file', blob, file.originalname);
     form.append('purpose', purpose);
+    form.append('expires_after', JSON.stringify({
+      anchor: 'created_at',
+      seconds: process.env.OPENAI_FILE_TTL_SECONDS || 60 * 60, // Defaults to 1 hour
+    }))
 
     const res = await fetch('https://api.openai.com/v1/files', {
       method: 'POST',

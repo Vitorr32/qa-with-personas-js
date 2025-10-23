@@ -13,6 +13,7 @@ import { PromptsService } from './prompt/prompt.service';
 import { Prompts } from './prompt/prompt.entity';
 import { OpenAIController } from './openai/openai.controller';
 import { OpenAIService } from './openai/openai.service';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { OpenAIService } from './openai/openai.service';
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
+    ConfigModule.forRoot(),
   ],
   controllers: [PersonasController, TagsController, PromptsController, OpenAIController],
   providers: [PersonasService, TagsService, PromptsService, OpenAIService],

@@ -7,7 +7,7 @@ import { ResponseStatus } from '../types/utils';
 import ResponseCard from '../features/response/ResponseCard';
 import { useDispatch } from 'react-redux';
 import { useUploadOpenAIFileMutation, useGetPersonasQuery } from '../store/apiSlice';
-import { setPersonas, setFilesIds } from '../store/questionSlice';
+import { setPersonas, setFilesIds, cleanResponses } from '../store/questionSlice';
 import { extractMessageFromErrorAndToast } from '../utils/Toasts';
 
 export default function ResponsesPage() {
@@ -32,16 +32,13 @@ export default function ResponsesPage() {
         return Object.values(responsesStatus).filter(status => status === 'completed' || status === 'error').length;
     }, [responsesStatus]);
 
-    const listenToBroadcastOfPersonaState = (personaId: string, state: string) => {
-        setResponsesStatus(prev => {
-            const newMap = new Map(prev);
-            newMap.set(personaId, state as ResponseStatus);
-            return newMap;
-        });
+    const listenToBroadcastOfPersonaState = (personaId: string, state: ResponseStatus) => {
+        setResponsesStatus(prev => new Map(prev).set(personaId, state));
     }
 
     // Setup function: 1) If no personas in store but there's a question, fetch all personas and populate store
     //                 2) If there are attached files, upload them and save returned ids in the store
+    //                 3) Clean up any previous responses 
     useEffect(() => {
         let mounted = true;
 
@@ -80,6 +77,10 @@ export default function ResponsesPage() {
                     }
                     if (ids.length > 0) dispatch(setFilesIds(ids));
                 }
+
+                // 3 ) Clean up previous responses
+                setResponsesStatus(new Map<string, ResponseStatus>());
+                dispatch(cleanResponses());
             } finally {
                 if (mounted) setIsSettingUp(false);
             }

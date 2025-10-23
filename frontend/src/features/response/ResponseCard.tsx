@@ -3,12 +3,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Persona } from "../../utils/Persona";
 import { AlertCircle, CheckCircle2, Clock, Loader2, MessageSquare } from "lucide-react";
 import { motion } from 'framer-motion';
-import { useStartOpenAIStreamMutation } from '../../store/apiSlice';
 
 import type { RootState } from '../../store/store';
 import { updateFullResponse, updateResponse } from "../../store/questionSlice";
 import { ResponseStatus } from "../../types/utils";
 import { getPersonaAvatar } from "../../utils/Avatar";
+import { errorToast, extractMessageFromErrorAndToast } from "../../utils/Toasts";
+
+interface Chunk {
+    text?: string;
+    done?: boolean;
+    error?: string;
+}
 
 interface ResponseCardProps {
     persona: Persona;
@@ -18,107 +24,191 @@ interface ResponseCardProps {
 export default function ResponseCard({ persona, broadcastState }: ResponseCardProps) {
     const dispatch = useDispatch();
     const contentRef = useRef<HTMLDivElement>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
+
     const question = useSelector((state: RootState) => state.question.question);
     const response = useSelector((state: RootState) => state.question.responses[persona.id] || '');
     const fileIds = useSelector((state: RootState) => state.question.fileIds);
+
     const [status, setStatus] = useState<ResponseStatus>('idle');
     const [error, setError] = useState<string | undefined>(undefined);
     const [startedAt, setStartedAt] = useState<Date | undefined>(undefined);
     const [completedAt, setCompletedAt] = useState<Date | undefined>(undefined);
 
+    // Start streaming when question changes
+    useEffect(() => {
+        if (!question || !persona.id) return;
+
+        // Reset state
+        setError(undefined);
+        setCompletedAt(undefined);
+        updateStatus('pending');
+
+        // Start the stream
+        startStream();
+
+        // Cleanup on unmount or question change
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+                abortControllerRef.current = null;
+            }
+        };
+    }, [question, persona.id]);
+
+    // Auto-scroll to bottom when response updates
     useEffect(() => {
         if ((status === 'streaming' || status === 'completed') && contentRef.current) {
             contentRef.current.scrollTop = contentRef.current.scrollHeight;
         }
     }, [response, status]);
 
-    useEffect(() => {
-        // Start streaming when a question exists.
-        if (!question || question.trim().length === 0) return;
-
-        let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
-        let controller: AbortController | null = null;
-        const [startOpenAIStreamTrigger] = useStartOpenAIStreamMutation();
-
-        const start = async () => {
-            updateStatus('pending');
-            dispatch(updateFullResponse({ personaId: persona.id, response: '' }));
-            setError(undefined);
+    const startStream = async () => {
+        try {
+            updateStatus('streaming');
             setStartedAt(new Date());
-            try {
-                const res: any = await startOpenAIStreamTrigger({ personaId: persona.id, question, fileIds });
-                if (res.error) throw res.error;
-                reader = res.data?.reader;
-                controller = res.data?.controller;
-                updateStatus('streaming');
 
-                const decoder = new TextDecoder();
-                let buffer = '';
+            // Create abort controller for this stream
+            abortControllerRef.current = new AbortController();
 
-                while (true) {
-                    if (!reader) break;
-                    const { value, done } = await reader.read();
-                    if (done) break;
-                    if (!value) continue;
-                    buffer += decoder.decode(value, { stream: true });
-                    // handle newline-delimited data events
-                    const parts = buffer.split('\n');
-                    // keep last partial
-                    buffer = parts.pop() || '';
-                    for (const line of parts) {
-                        const trimmed = line.trim();
-                        if (!trimmed) continue;
-                        if (!trimmed.startsWith('data:')) continue;
-                        const payload = trimmed.replace(/^data:\s*/, '');
-                        try {
-                            const parsed = JSON.parse(payload);
-                            if (parsed.done) {
-                                updateStatus('completed');
-                                setCompletedAt(new Date());
-                                controller?.abort();
-                                return;
-                            }
-                            if (parsed.error) {
-                                updateStatus('error');
-                                setError(parsed.error);
-                                controller?.abort();
-                                return;
-                            }
-                            if (parsed.text) {
-                                dispatch(updateResponse({ personaId: persona.id, response: parsed.text }));
-                            }
-                        } catch (e) {
-                            dispatch(updateResponse({ personaId: persona.id, response: payload + '\n' }));
+            // Get the base URL from environment
+            const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+            // Make the streaming request directly with fetch
+            // We can't use RTK Query's built-in streaming, so we handle it manually
+            const response = await fetch(`${baseUrl}/openai/stream`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    personaId: persona.id,
+                    question: question,
+                    fileIds: fileIds,
+                }),
+                signal: abortControllerRef.current.signal,
+            });
+
+            if (!response.ok) {
+                errorToast(`Stream request failed: ${response.statusText}`);
+                throw new Error(`Stream request failed: ${response.statusText}`);
+            }
+
+            // Process the SSE stream
+            await processStream(response);
+
+        } catch (err: any) {
+            if (err.name === 'AbortError') {
+                // User cancelled, not an error
+                return;
+            }
+
+            extractMessageFromErrorAndToast(err, 'Stream error occurred');
+        }
+    };
+
+    const processStream = async (response: Response) => {
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (!reader) {
+            throw new Error('Response body is not readable');
+        }
+
+        let accumulatedText = '';
+        // Buffer to hold partial data between reads
+        let buffer = '';
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+
+                // Append to buffer and split into lines
+                buffer += chunk;
+
+                // SSE messages are separated by newlines. We'll split by '\n' and process
+                // any line that starts with 'data:'. Keep the remainder in buffer.
+                const lines = buffer.split(/\r?\n/);
+
+                // If the last line isn't a full line (no trailing newline), keep it in buffer
+                if (!buffer.endsWith('\n') && !buffer.endsWith('\r\n')) {
+                    buffer = lines.pop() || '';
+                } else {
+                    buffer = '';
+                }
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed) continue;
+
+                    // Only process 'data: ' lines; ignore comments or other SSE fields
+                    if (!trimmed.startsWith('data:')) continue;
+
+                    const jsonText = trimmed.replace(/^data:\s?/, '');
+
+                    try {
+                        const trueChunk: Chunk = JSON.parse(jsonText);
+
+                        if (trueChunk.error) {
+                            errorToast(`Error from stream: ${trueChunk.error}`);
+                            throw new Error(trueChunk.error);
                         }
+
+                        if (trueChunk.text) {
+                            // Accumulate text and update Redux store
+                            accumulatedText += trueChunk.text;
+
+                            dispatch(updateResponse({
+                                personaId: persona.id,
+                                chunk: trueChunk.text,
+                            }));
+                        }
+
+                        if (trueChunk.done) {
+                            // Stream completed successfully
+                            setCompletedAt(new Date());
+                            updateStatus('completed');
+
+                            dispatch(updateFullResponse({
+                                personaId: persona.id,
+                                response: accumulatedText,
+                            }));
+                        }
+                    } catch (parseError) {
+                        console.warn('Failed to parse SSE message:', jsonText, parseError);
+                        // ignore parse errors for this line and continue
+                        continue;
                     }
                 }
-
-                updateStatus('completed');
-                setCompletedAt(new Date());
-            } catch (err: any) {
-                if (err && err.name === 'AbortError') {
-                    // ignore
-                    return;
-                }
-                updateStatus('error');
-                setError(err?.message || 'Stream failed');
             }
-        };
 
-        start();
+            // If we exit the loop without receiving done, mark as completed anyway
+            if (status === 'streaming') {
+                setCompletedAt(new Date());
+                updateStatus('completed');
 
-        return () => {
-            // abort the fetch via controller if available
+                dispatch(updateFullResponse({
+                    personaId: persona.id,
+                    response: accumulatedText,
+                }));
+            }
+        } finally {
             try {
-                // controller abort was captured in outer scope by startOpenAIStream return
-            } catch { }
-        };
-    }, [question, persona.id]);
+                reader.releaseLock();
+            } catch (e) {
+                // ignore if reader is already released
+            }
+        }
+    };
 
     const updateStatus = (newStatus: ResponseStatus) => {
         setStatus(newStatus);
         broadcastState(newStatus);
-    }
+    };
 
     const getStatusIcon = () => {
         switch (status) {
