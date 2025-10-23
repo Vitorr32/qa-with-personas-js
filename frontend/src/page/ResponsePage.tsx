@@ -1,0 +1,212 @@
+import { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageSquare, CheckCircle2, Brain } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/store';
+import { ResponseStatus } from '../types/utils';
+import ResponseCard from '../features/response/ResponseCard';
+import { useDispatch } from 'react-redux';
+import { useUploadOpenAIFileMutation, useGetPersonasQuery } from '../store/apiSlice';
+import { setPersonas, setFilesIds } from '../store/questionSlice';
+import { extractMessageFromErrorAndToast } from '../utils/Toasts';
+
+export default function ResponsesPage() {
+    const question = useSelector((state: RootState) => state.question.question);
+    const toAskPersonas = useSelector((state: RootState) => state.question.personas);
+    const attachedFiles = useSelector((state: RootState) => state.question.attachedFiles);
+    const responses = useSelector((state: RootState) => state.question.responses);
+    const [responsesStatus, setResponsesStatus] = useState<Map<string, ResponseStatus>>(new Map<string, ResponseStatus>());
+    const [activeTab, setActiveTab] = useState<'responses' | 'analysis'>('responses');
+    const [isSettingUp, setIsSettingUp] = useState(false);
+    const dispatch = useDispatch();
+    const [uploadOpenAIFile] = useUploadOpenAIFileMutation();
+    const shouldFetchAllPersonas = Boolean(question && question.trim().length > 0 && (toAskPersonas?.length ?? 0) === 0);
+    // use RTK Query hook to fetch personas when needed
+    const { data: personasQueryData } = useGetPersonasQuery({ pageSize: 10000 }, { skip: !shouldFetchAllPersonas });
+
+    const allCompleted = useMemo(() => {
+        return Object.values(responsesStatus).every(status => status === 'completed' || status === 'error');
+    }, [responsesStatus]);
+
+    const completedCount = useMemo(() => {
+        return Object.values(responsesStatus).filter(status => status === 'completed' || status === 'error').length;
+    }, [responsesStatus]);
+
+    const listenToBroadcastOfPersonaState = (personaId: string, state: string) => {
+        setResponsesStatus(prev => {
+            const newMap = new Map(prev);
+            newMap.set(personaId, state as ResponseStatus);
+            return newMap;
+        });
+    }
+
+    // Setup function: 1) If no personas in store but there's a question, fetch all personas and populate store
+    //                 2) If there are attached files, upload them and save returned ids in the store
+    useEffect(() => {
+        let mounted = true;
+
+        const doSetup = async () => {
+            // If there's nothing to do, skip
+            if (!question || question.trim().length === 0) return;
+
+            // only run setup if we have a question and there are no personas to ask
+            const needPersonas = (toAskPersonas?.length ?? 0) === 0;
+            const needUpload = Boolean(attachedFiles && attachedFiles.length > 0);
+            if (!needPersonas && !needUpload) return;
+            setIsSettingUp(true);
+
+            try {
+                // 1) fetch all personas if needed - the useGetPersonasQuery hook will run when shouldFetchAllPersonas is true
+                if (needPersonas && personasQueryData) {
+                    const items = personasQueryData?.items ?? (Array.isArray(personasQueryData) ? personasQueryData : []);
+                    if (mounted && items && items.length > 0) {
+                        dispatch(setPersonas(items));
+                    }
+                }
+
+                // 2) upload attached files and save ids
+                if (needUpload && attachedFiles && attachedFiles.length > 0) {
+                    const ids: string[] = [];
+                    for (const f of attachedFiles) {
+                        try {
+                            const r: any = await uploadOpenAIFile(f as File);
+                            // r may be the RTK result wrapper or the plain data depending on runtime
+                            const payload = r?.data ?? r;
+                            const id = payload?.id ?? payload?.result?.id ?? null;
+                            if (id) ids.push(id);
+                        } catch (err) {
+                            extractMessageFromErrorAndToast(err, 'Error uploading a file.');
+                        }
+                    }
+                    if (ids.length > 0) dispatch(setFilesIds(ids));
+                }
+            } finally {
+                if (mounted) setIsSettingUp(false);
+            }
+        };
+
+        // Run setup once when component mounts or when question/attachedFiles change
+        doSetup();
+
+        return () => { mounted = false; };
+    }, [question, toAskPersonas?.length, attachedFiles?.length, personasQueryData]);
+
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <div className="max-w-7xl mx-auto px-4 py-8">
+                {/* Header */}
+                <div className="mb-6">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Persona Responses</h1>
+                    <p className="text-gray-600">
+                        Asking {toAskPersonas.length} persona{toAskPersonas.length !== 1 ? 's' : ''} about:
+                        <span className="font-medium text-gray-900 ml-2">"{question}"</span>
+                    </p>
+                </div>
+
+                {/* Tabs */}
+                <div className="mb-6 border-b border-gray-200">
+                    <div className="flex gap-1">
+                        <button
+                            onClick={() => setActiveTab('responses')}
+                            className={`px-6 py-3 font-medium transition-colors relative ${activeTab === 'responses'
+                                ? 'text-blue-600 border-b-2 border-blue-600'
+                                : 'text-gray-600 hover:text-gray-900'
+                                }`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <MessageSquare className="w-4 h-4" />
+                                Responses
+                                {Object.keys(responses).length > 0 && (
+                                    <span className={`px-2 py-0.5 text-xs rounded-full ${allCompleted ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                                        }`}>
+                                        {completedCount}/{Object.keys(responses).length}
+                                    </span>
+                                )}
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('analysis')}
+                            className={`px-6 py-3 font-medium transition-colors relative ${activeTab === 'analysis'
+                                ? 'text-purple-600 border-b-2 border-purple-600'
+                                : 'text-gray-600 hover:text-gray-900'
+                                }`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <Brain className="w-4 h-4" />
+                                Analysis
+                                {/* TODO Later {analysis.status === 'completed' && (
+                                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                )} */}
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                {activeTab === 'responses' && (
+                    <div className="mb-6 flex items-center justify-between">
+                        {Object.keys(responses).length > 0 && (
+                            <div className="text-sm text-gray-600">
+                                {completedCount} / {responses.size} completed
+                            </div>
+                        )}
+
+                        {allCompleted && Object.keys(responses).length && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="flex items-center gap-2 text-green-600 font-medium"
+                            >
+                                <CheckCircle2 className="w-5 h-5" />
+                                All responses received
+                            </motion.div>
+                        )}
+                    </div>
+                )}
+
+                {/* Content */}
+                <AnimatePresence mode="wait">
+                    {activeTab === 'responses' ? (
+                        <motion.div
+                            key="responses"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            {isSettingUp ? (
+                                <div className="p-6 text-center text-gray-600">Preparing personas and uploading files...</div>
+                            ) : (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {toAskPersonas.map(persona => {
+                                        return (
+                                            <ResponseCard
+                                                key={persona.id}
+                                                persona={persona}
+                                                broadcastState={(status) => listenToBroadcastOfPersonaState(persona.id, status)}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="analysis"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            {/* TODO later <AnalysisPanel
+                                analysis={analysis}
+                                onStartAnalysis={startAnalysis}
+                                canAnalyze={allCompleted && completedCount > 0}
+                            /> */}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </div>
+    );
+};

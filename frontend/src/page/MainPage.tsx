@@ -9,6 +9,8 @@ import PersonaChip from '../features/personas/PersonaChip';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from '@tanstack/react-router';
 import { setQuestion, setFiles, setPersonas, setTags } from '../store/questionSlice';
+import { useCheckOpenAIFileMutation } from '../store/apiSlice';
+import { errorToast, successToast } from '../utils/Toasts';
 import { Tag } from '../utils/Tag';
 import { Persona } from '../utils/Persona';
 import { mergeArraysOfObjects } from '../utils/utils';
@@ -32,10 +34,6 @@ export default function MainPage() {
         }
     };
 
-    const handleTagToggle = (tags: Tag[]) => {
-        setSelectedTags(tags);
-    };
-
     const handleToggleToAskList = (persona: Persona) => {
         setToAskList(prev =>
             prev.find((q) => q.id === persona.id)
@@ -50,10 +48,32 @@ export default function MainPage() {
         })
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            setAttachedFiles(Array.from(e.target.files));
+    const [checkOpenAIFileTrigger] = useCheckOpenAIFileMutation();
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files) return;
+        const files = Array.from(e.target.files);
+        const accepted: File[] = [];
+        for (const f of files) {
+            try {
+                const res: any = await checkOpenAIFileTrigger(f);
+                // RTK mutation returns { data } or { error }
+                if (res && res.data && (res.data.ok || res.data.accepted)) {
+                    accepted.push(f);
+                    successToast(`File ${f.name} accepted`);
+                } else if (res && res.data && res.data.reason) {
+                    errorToast(`File ${f.name} rejected: ${res.data.reason}`);
+                } else if (res && res.error) {
+                    errorToast(`File ${f.name} rejected: ${JSON.stringify(res.error)}`);
+                } else {
+                    errorToast(`File ${f.name} rejected: invalid`);
+                }
+            } catch (err: any) {
+                errorToast(`File ${f.name} check failed: ${err?.message || 'error'}`);
+            }
         }
+        if (accepted.length > 0) setAttachedFiles(accepted);
+        e.currentTarget.value = '';
     };
 
     const handleSubmitQuestion = () => {
@@ -63,7 +83,7 @@ export default function MainPage() {
         dispatch(setTags(selectedTags))
 
         navigate({
-            to: "/results"
+            to: "/response"
         })
     };
 

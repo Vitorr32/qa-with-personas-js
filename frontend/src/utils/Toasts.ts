@@ -26,5 +26,10 @@ export function errorToast(message: string) {
         theme: "light",
         transition: Bounce,
     });
+}
 
+export function extractMessageFromErrorAndToast(error: any, defaultMsg: string) {
+    console.error('Failed to delete personas', error);
+    const message = error?.data?.message || error?.message || defaultMsg;
+    errorToast(message);
 }

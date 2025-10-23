@@ -92,6 +92,16 @@ export const apiSlice = createApi({
             invalidatesTags: [{ type: 'Prompts', id: 'SINGLE' }],
         }),
 
+        // OpenAI helpers converted to RTK Query mutations
+        startOpenAIStream: builder.mutation<any, { personaId: string; question: string; fileIds?: string[] } | void>({
+        }),
+
+        uploadOpenAIFile: builder.mutation<any, File>({
+        }),
+
+        checkOpenAIFile: builder.mutation<any, File>({
+        }),
+
         deletePersona: builder.mutation<
             { deleted?: number } | void,
             Persona | Persona[] | { ids: string[] }
@@ -152,4 +162,7 @@ export const {
     useGetTagsQuery,
     useGetPromptsQuery,
     useUpdatePromptsMutation,
+    useStartOpenAIStreamMutation,
+    useUploadOpenAIFileMutation,
+    useCheckOpenAIFileMutation,
 } = apiSlice

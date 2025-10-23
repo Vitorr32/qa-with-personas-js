@@ -3,14 +3,13 @@ import { combineSlices, configureStore } from "@reduxjs/toolkit"
 import { setupListeners } from "@reduxjs/toolkit/query"
 import { languageSlice } from "../store/languageSlice"
 import { questionSlice } from "./questionSlice"
-import { memorySlice } from "./memorySlice"
 import { apiSlice } from "./apiSlice"
 import { listenerMiddleware } from "./listenerMiddleware"
 
 
 // `combineSlices` automatically combines the reducers using
 // their `reducerPath`s, therefore we no longer need to call `combineReducers`.
-const rootReducer = combineSlices(languageSlice, questionSlice, memorySlice, apiSlice)
+const rootReducer = combineSlices(languageSlice, questionSlice, apiSlice)
 // Infer the `RootState` type from the root reducer
 export type RootState = ReturnType<typeof rootReducer>
 

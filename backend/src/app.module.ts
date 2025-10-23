@@ -11,6 +11,8 @@ import { PersonasService } from './persona/persona.services';
 import { PromptsController } from './prompt/prompt.controller';
 import { PromptsService } from './prompt/prompt.service';
 import { Prompts } from './prompt/prompt.entity';
+import { OpenAIController } from './openai/openai.controller';
+import { OpenAIService } from './openai/openai.service';
 
 @Module({
   imports: [
@@ -30,7 +32,7 @@ import { Prompts } from './prompt/prompt.entity';
       serveRoot: '/uploads',
     }),
   ],
-  controllers: [PersonasController, TagsController, PromptsController],
-  providers: [PersonasService, TagsService, PromptsService],
+  controllers: [PersonasController, TagsController, PromptsController, OpenAIController],
+  providers: [PersonasService, TagsService, PromptsService, OpenAIService],
 })
 export class AppModule { }
