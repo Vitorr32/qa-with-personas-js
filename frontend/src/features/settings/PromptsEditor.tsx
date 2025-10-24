@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, LoaderPinwheel, Save } from "lucide-react";
 import { useGetPromptsQuery, useUpdatePromptsMutation } from "../../store/apiSlice";
-import { Bounce, toast } from "react-toastify";
+import { extractMessageFromErrorAndToast, successToast } from "../../utils/Toasts";
 
 export default function PromptsEditor() {
     const { data, isLoading } = useGetPromptsQuery();
@@ -25,31 +25,11 @@ export default function PromptsEditor() {
         try {
             await updatePrompts({ mainPrompt, analystPrompt }).unwrap();
             setSaved(true);
-            toast.success("Prompt updated succesfully!", {
-                position: "bottom-right",
-                autoClose: 2000,
-                hideProgressBar: false,
-                closeOnClick: false,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                transition: Bounce,
-            });
+            successToast("Prompts updated succesfully!");
             // hide the saved indicator after a short delay
             setTimeout(() => setSaved(false), 2000);
         } catch (err: any) {
-            toast.error(err, {
-                position: "bottom-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: false,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                transition: Bounce,
-            });
+            extractMessageFromErrorAndToast(err, "Failed to update prompts");
         }
     };
 

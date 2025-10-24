@@ -1,6 +1,45 @@
-import { Brain } from "lucide-react";
+import { AlertCircle, BarChart3, Brain, CheckCircle2, Hash, Loader2, MessageSquare, PieChart } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
+import { useFetchAnalysisMutation } from "../../store/apiSlice";
+import { useState } from "react";
+import { ResponseStatus } from "../../types/utils";
+import { motion } from 'framer-motion';
+import { extractMessageFromErrorAndToast } from "../../utils/Toasts";
+import { generateCompleteAnalysis } from "../../utils/parser";
+import SentimentChart from "./SentimentChart";
+import ThemesList from "./ThemesList";
+import { WordCloud } from "@isoterik/react-word-cloud";
+import { AnalysisData } from "../../utils/interfaces";
 
-export default function AnalysisTab() {
+interface AnalysisTabProps {
+    canAnalyze: boolean;
+}
+
+export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
+    const question = useSelector((state: RootState) => state.question.question);
+    const responses = useSelector((state: RootState) => state.question.responses);
+    const fileIds = useSelector((state: RootState) => state.question.fileIds);
+    const [getAnalysis] = useFetchAnalysisMutation();
+
+    const [analysisStatus, setAnalysisStatus] = useState<ResponseStatus>('idle');
+    const [analysisData, setAnalysisData] = useState<AnalysisData>()
+
+    async function onStartAnalysis() {
+        try {
+            setAnalysisStatus('pending');
+            // Trigger analysis API call
+            const formattedResponses = Object.entries(responses).map(([persona, resp]) => ({ persona, response: resp }));
+            console.log("Starting analysis with responses:", formattedResponses);
+            const analysisRaw = await getAnalysis({ question, responses: formattedResponses, fileIds });
+            console.log("Analysis result:", analysisRaw);
+            setAnalysisData(generateCompleteAnalysis(analysisRaw.data?.analysis || "", responses));
+            setAnalysisStatus('completed');
+        } catch (err) {
+            extractMessageFromErrorAndToast(err, "Analysis failed");
+        }
+    }
+
     return (
         <div className="space-y-6">
             {/* Analysis Header */}
@@ -16,7 +55,7 @@ export default function AnalysisTab() {
                         </div>
                     </div>
 
-                    {analysis.status === 'idle' && (
+                    {analysisStatus === "idle" && (
                         <button
                             onClick={onStartAnalysis}
                             disabled={!canAnalyze}
@@ -26,14 +65,14 @@ export default function AnalysisTab() {
                         </button>
                     )}
 
-                    {analysis.status === 'analyzing' && (
+                    {analysisStatus === "pending" && (
                         <div className="flex items-center gap-2 text-purple-600">
                             <Loader2 className="w-5 h-5 animate-spin" />
                             <span className="font-medium">Analyzing...</span>
                         </div>
                     )}
 
-                    {analysis.status === 'completed' && (
+                    {analysisStatus === "completed" && (
                         <div className="flex items-center gap-2 text-green-600">
                             <CheckCircle2 className="w-5 h-5" />
                             <span className="font-medium">Analysis Complete</span>
@@ -42,7 +81,7 @@ export default function AnalysisTab() {
                 </div>
 
                 {/* Summary */}
-                {(analysis.status === 'analyzing' || analysis.status === 'completed') && (
+                {/* {analysisStatus === "completed" && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -53,7 +92,6 @@ export default function AnalysisTab() {
                             Executive Summary
                         </h3>
                         <p className="text-gray-700 leading-relaxed">
-                            {analysis.summary}
                             {analysis.status === 'analyzing' && (
                                 <motion.span
                                     animate={{ opacity: [1, 0] }}
@@ -63,11 +101,11 @@ export default function AnalysisTab() {
                             )}
                         </p>
                     </motion.div>
-                )}
+                )} */}
             </div>
 
             {/* Key Insights */}
-            {analysis.status === 'completed' && (
+            {analysisStatus === 'completed' && analysisData && (
                 <>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Key Points */}
@@ -82,7 +120,7 @@ export default function AnalysisTab() {
                                 Key Points
                             </h3>
                             <ul className="space-y-3">
-                                {analysis.keyPoints.map((point, index) => (
+                                {analysisData.keyPoints.map((point, index) => (
                                     <motion.li
                                         key={index}
                                         initial={{ opacity: 0, x: -10 }}
@@ -109,7 +147,7 @@ export default function AnalysisTab() {
                                 Points of Divergence
                             </h3>
                             <ul className="space-y-3">
-                                {analysis.disagreements.map((point, index) => (
+                                {analysisData.divergences.map((point, index) => (
                                     <motion.li
                                         key={index}
                                         initial={{ opacity: 0, x: -10 }}
@@ -137,7 +175,7 @@ export default function AnalysisTab() {
                             Consensus View
                         </h3>
                         <p className="text-gray-700 bg-blue-50 rounded-lg p-4 border border-blue-100">
-                            {analysis.consensus}
+                            {analysisData.consensus}
                         </p>
                     </motion.div>
 
@@ -154,7 +192,7 @@ export default function AnalysisTab() {
                                 <Hash className="w-5 h-5 text-blue-600" />
                                 Word Frequency
                             </h3>
-                            <WordCloud words={analysis.wordFrequency} />
+                            <WordCloud words={analysisData.wordFrequency} width={300} height={200} />
                         </motion.div>
 
                         {/* Sentiment Analysis */}
@@ -168,7 +206,7 @@ export default function AnalysisTab() {
                                 <BarChart3 className="w-5 h-5 text-purple-600" />
                                 Sentiment Distribution
                             </h3>
-                            <SentimentChart sentiment={analysis.sentiment} />
+                            <SentimentChart sentimentDistribution={analysisData.sentimentDistribution} />
                         </motion.div>
                     </div>
 
@@ -183,13 +221,13 @@ export default function AnalysisTab() {
                             <PieChart className="w-5 h-5 text-indigo-600" />
                             Common Themes
                         </h3>
-                        <ThemesList themes={analysis.themes} />
+                        <ThemesList themes={analysisData.themes} />
                     </motion.div>
                 </>
             )}
 
             {/* Idle State */}
-            {analysis.status === 'idle' && (
+            {analysisStatus === 'idle' && (
                 <div className="bg-white rounded-lg shadow-md border border-gray-200 p-12 text-center">
                     <Brain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Analyze</h3>
@@ -203,10 +241,3 @@ export default function AnalysisTab() {
         </div>
     );
 }
-const AnalysisPanel: React.FC<{
-    analysis: AnalysisData;
-    onStartAnalysis: () => void;
-    canAnalyze: boolean;
-}> = ({ analysis, onStartAnalysis, canAnalyze }) => {
-
-};

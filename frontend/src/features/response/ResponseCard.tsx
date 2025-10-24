@@ -9,6 +9,7 @@ import { updateFullResponse, updateResponse } from "../../store/questionSlice";
 import { ResponseStatus } from "../../types/utils";
 import { getPersonaAvatar } from "../../utils/Avatar";
 import { errorToast, extractMessageFromErrorAndToast } from "../../utils/Toasts";
+import TagChipList from "../utils/TagChipList";
 
 interface Chunk {
     text?: string;
@@ -38,6 +39,12 @@ export default function ResponseCard({ persona, broadcastState }: ResponseCardPr
     // Start streaming when question changes
     useEffect(() => {
         if (!question || !persona.id) return;
+
+        if (response && response.length > 0) {
+            // Already have a response, mark as completed
+            updateStatus('completed');
+            return;
+        }
 
         // Reset state
         setError(undefined);
@@ -247,8 +254,8 @@ export default function ResponseCard({ persona, broadcastState }: ResponseCardPr
             exit={{ opacity: 0, scale: 0.95 }}
             className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden"
         >
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
-                <div className="flex items-start justify-between">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200 flex flex-col">
+                <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl shadow-sm">
                             {getPersonaAvatar(persona)}
@@ -270,16 +277,7 @@ export default function ResponseCard({ persona, broadcastState }: ResponseCardPr
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 mt-3">
-                    {persona.tags.map(tag => (
-                        <span
-                            key={tag.id}
-                            className="px-2 py-1 bg-white text-xs font-medium text-gray-700 rounded-full border border-gray-200"
-                        >
-                            {tag.name}
-                        </span>
-                    ))}
-                </div>
+                <TagChipList tags={persona.tags} theme="dark" />
             </div>
 
             <div className="p-6">

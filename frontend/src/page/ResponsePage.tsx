@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux';
 import { useUploadOpenAIFileMutation, useGetPersonasQuery } from '../store/apiSlice';
 import { setPersonas, setFilesIds, cleanResponses } from '../store/questionSlice';
 import { extractMessageFromErrorAndToast } from '../utils/Toasts';
+import AnalysisTab from '../features/response/AnalysisTab';
 
 export default function ResponsesPage() {
     const question = useSelector((state: RootState) => state.question.question);
@@ -18,22 +19,23 @@ export default function ResponsesPage() {
     const [responsesStatus, setResponsesStatus] = useState<Map<string, ResponseStatus>>(new Map<string, ResponseStatus>());
     const [activeTab, setActiveTab] = useState<'responses' | 'analysis'>('responses');
     const [isSettingUp, setIsSettingUp] = useState(false);
+    const [allCompleted, setAllCompleted] = useState(false);
+    const [completedCount, setCompletedCount] = useState(0);
     const dispatch = useDispatch();
     const [uploadOpenAIFile] = useUploadOpenAIFileMutation();
     const shouldFetchAllPersonas = Boolean(question && question.trim().length > 0 && (toAskPersonas?.length ?? 0) === 0);
     // use RTK Query hook to fetch personas when needed
     const { data: personasQueryData } = useGetPersonasQuery({ pageSize: 10000 }, { skip: !shouldFetchAllPersonas });
 
-    const allCompleted = useMemo(() => {
-        return Object.values(responsesStatus).every(status => status === 'completed' || status === 'error');
-    }, [responsesStatus]);
-
-    const completedCount = useMemo(() => {
-        return Object.values(responsesStatus).filter(status => status === 'completed' || status === 'error').length;
+    useEffect(() => {
+        setAllCompleted([...responsesStatus.values()].every(status => status === 'completed' || status === 'error'));
+        setCompletedCount([...responsesStatus.values()].filter(status => status === 'completed' || status === 'error').length);
     }, [responsesStatus]);
 
     const listenToBroadcastOfPersonaState = (personaId: string, state: ResponseStatus) => {
-        setResponsesStatus(prev => new Map(prev).set(personaId, state));
+        setResponsesStatus(prev => {
+            return new Map(prev).set(personaId, state)
+        });
     }
 
     // Setup function: 1) If no personas in store but there's a question, fetch all personas and populate store
@@ -106,7 +108,7 @@ export default function ResponsesPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className="mb-6 border-b border-gray-200">
+                <div className="mb-6 border-b border-gray-200 sticky top-0 bg-gray-50 z-10">
                     <div className="flex gap-1">
                         <button
                             onClick={() => setActiveTab('responses')}
@@ -148,7 +150,7 @@ export default function ResponsesPage() {
                     <div className="mb-6 flex items-center justify-between">
                         {Object.keys(responses).length > 0 && (
                             <div className="text-sm text-gray-600">
-                                {completedCount} / {responses.size} completed
+                                {completedCount} / {Object.keys(responses).length} completed
                             </div>
                         )}
 
@@ -199,11 +201,7 @@ export default function ResponsesPage() {
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.2 }}
                         >
-                            {/* TODO later <AnalysisPanel
-                                analysis={analysis}
-                                onStartAnalysis={startAnalysis}
-                                canAnalyze={allCompleted && completedCount > 0}
-                            /> */}
+                            <AnalysisTab canAnalyze={allCompleted && completedCount > 0} />
                         </motion.div>
                     )}
                 </AnimatePresence>

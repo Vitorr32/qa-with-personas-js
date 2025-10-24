@@ -15,8 +15,6 @@ interface PersonaCardProps {
 
 export default function PersonaCard({ persona, isSelected, onToggleSelect, animationDelay = 0 }: PersonaCardProps) {
     const [showModal, setShowModal] = useState(false);
-    const displayTags = persona.tags.slice(0, 3);
-    const hasMoreTags = persona.tags.length > 3;
 
     const handleCardClick = (e: React.MouseEvent) => {
         // Don't toggle if clicking on details button
@@ -76,7 +74,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
 
                 {/* Tags and Details Button */}
                 <div className="flex items-center justify-between">
-                    <TagChipList tags={displayTags} />
+                    <TagChipList tags={persona.tags} />
 
                     {/* Details Button */}
                     <button
@@ -145,16 +143,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                                         <Tag className="w-5 h-5 text-blue-600" />
                                         Tags ({persona.tags.length})
                                     </h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {persona.tags.map((tag, index) => (
-                                            <span
-                                                key={tag.id}
-                                                className="px-3 py-2 bg-blue-50 text-blue-700 text-sm rounded-lg font-medium border border-blue-200"
-                                            >
-                                                {tag.name}
-                                            </span>
-                                        ))}
-                                    </div>
+                                    <TagChipList tags={persona.tags} />
                                 </div>
 
                                 {/* Metadata */}

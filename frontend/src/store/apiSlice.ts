@@ -163,6 +163,21 @@ export const apiSlice = createApi({
                 };
             },
         }),
+
+        fetchAnalysis: builder.mutation<{
+            analysis: string,
+            metadata: {
+                model: string,
+                tokensUsed: string,
+                responsesAnalyzed: string,
+            }
+        }, { responses: { persona: string; response: string }[], question: string, fileIds: string[] }>({
+            query: ({ question, responses, fileIds }) => ({
+                url: '/openai/analyze',
+                method: 'POST',
+                body: { question, responses, fileIds },
+            }),
+        }),
     }),
 })
 
@@ -176,4 +191,5 @@ export const {
     useUpdatePromptsMutation,
     useUploadOpenAIFileMutation,
     useCheckOpenAIFileMutation,
+    useFetchAnalysisMutation
 } = apiSlice

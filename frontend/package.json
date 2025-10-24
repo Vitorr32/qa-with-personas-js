@@ -16,6 +16,7 @@
     "type-check": "tsc -b --noEmit"
   },
   "dependencies": {
+    "@isoterik/react-word-cloud": "^1.2.0",
     "@reduxjs/toolkit": "^2.6.1",
     "@tailwindcss/vite": "^4.1.14",
     "@tanstack/react-router": "^1.132.47",
