@@ -31,6 +31,18 @@ export class OpenAIService {
     return this.openaiClient.chat.completions.create(payload, { signal });
   }
 
+  /**
+   * Non-streaming chat completion from OpenAI. Returns the complete response.
+   */
+  async chatCompletion(payload: any, signal?: AbortSignal): Promise<any> {
+    if (!this.apiKey) {
+      this.logger.error('OPENAI_API_KEY not set');
+      throw new InternalServerErrorException('OpenAI API key not configured');
+    }
+
+    return this.openaiClient.chat.completions.create(payload, { signal });
+  }
+
   /** Upload a file to OpenAI and return the parsed JSON response. Expects an Express file (multer). */
   async uploadFile(file: Express.Multer.File, purpose = 'user_data'): Promise<any> {
     if (!this.apiKey) {

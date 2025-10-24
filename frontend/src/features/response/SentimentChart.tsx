@@ -20,7 +20,7 @@ export default function SentimentChart({ sentimentDistribution }: SentimentChart
                     <div key={label}>
                         <div className="flex justify-between text-sm mb-1">
                             <span className="font-medium text-gray-700">{label}</span>
-                            <span className="text-gray-600">{value}%</span>
+                            <span className="text-gray-600">{percentage}%</span>
                         </div>
                         <div className={`w-full h-3 ${lightColor} rounded-full overflow-hidden`}>
                             <motion.div

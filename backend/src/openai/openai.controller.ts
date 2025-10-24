@@ -20,6 +20,12 @@ class StreamRequestDto {
   fileIds?: string[];
 }
 
+class AnalyzeRequestDto {
+  question: string;
+  responses: Array<{ persona: string; response: string }>;
+  fileIds?: string[];
+}
+
 @Controller('openai')
 export class OpenAIController {
   private readonly logger = new Logger(OpenAIController.name);
@@ -100,6 +106,59 @@ export class OpenAIController {
     streamFinished = true;
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();
+  }
+
+  @Post('analyze')
+  async analyze(@Body() dto: AnalyzeRequestDto) {
+    if (!dto || !dto.responses || !Array.isArray(dto.responses)) {
+      throw new BadRequestException('responses array is required');
+    }
+
+    if (dto.responses.length === 0) {
+      throw new BadRequestException('responses array cannot be empty');
+    }
+
+    // Validate response structure
+    for (const item of dto.responses) {
+      if (!item.persona || !item.response) {
+        throw new BadRequestException('each response must have persona and response fields');
+      }
+    }
+
+    const prompts = await this.prompts.getPrompts();
+
+    // Format the responses for analysis
+    let messageList: { role: string, content: string }[] = [{ role: 'user', content: `Question Asked: ${dto.question}` }];
+
+    for (const item of dto.responses) {
+      const persona = await this.personas.findOne(item.persona);
+      if (!persona) continue;
+      messageList.push({ role: 'user', content: `Persona: ${persona.name}\nResponse: ${item.response}` });
+    }
+
+    const payload: any = {
+      model: process.env.OPENAI_ANALYSIS_MODEL || 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: prompts.analystPrompt },
+        ...messageList
+      ]
+    };
+
+    try {
+      const result = await this.openai.chatCompletion(payload);
+
+      return {
+        analysis: result.choices[0].message.content,
+        metadata: {
+          model: result.model,
+          tokensUsed: result.usage,
+          responsesAnalyzed: dto.responses.length,
+        },
+      };
+    } catch (error) {
+      this.logger.error('Analysis failed:', error);
+      throw new BadRequestException('Failed to analyze responses');
+    }
   }
 
   @Post('upload')

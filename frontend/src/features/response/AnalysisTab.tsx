@@ -190,9 +190,14 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                         >
                             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                 <Hash className="w-5 h-5 text-blue-600" />
-                                Word Frequency
+                                Word Cloud
                             </h3>
-                            <WordCloud words={analysisData.wordFrequency} width={300} height={200} />
+                            <WordCloud words={analysisData.wordFrequency} width={400} height={300} fontSize={(word) => {
+                                // Normalize value between min and max
+                                const normalized = (word.value - 10) / (100 - 10);
+                                const size = 16 + normalized * (100 - 10);
+                                return size;
+                            }} />
                         </motion.div>
 
                         {/* Sentiment Analysis */}

@@ -1,71 +1,55 @@
-import { AnalysisData } from "./interfaces";
 import { Word } from "@isoterik/react-word-cloud";
+import { AnalysisData, LLMResponseFormat } from "./interfaces";
 
+interface PersonaResponses {
+    [uuid: string]: string;
+}
 /**
- * Parses the LLM response text and extracts structured data
- * @param llmResponse - The raw text response from the LLM
+ * Parses the LLM JSON response and extracts structured data
+ * @param llmResponse - The raw text response from the LLM (should contain JSON)
  * @returns Parsed AnalysisData object (without wordFrequency)
+ * @throws Error if JSON parsing fails
  */
 export function parseLLMResponse(llmResponse: string): Omit<AnalysisData, 'wordFrequency'> {
-    const result: Omit<AnalysisData, 'wordFrequency'> = {
-        keyPoints: [],
-        divergences: [],
-        consensus: '',
-        sentimentDistribution: { positive: 0, neutral: 0, negative: 0 },
-        themes: []
-    };
+    // Extract JSON from response (in case there's surrounding text)
+    let jsonStr = llmResponse.trim();
 
-    // Extract key_points
-    const keyPointsMatch = llmResponse.match(/key_points:\s*(\[[\s\S]*?\])/);
-    if (keyPointsMatch) {
-        try {
-            result.keyPoints = JSON.parse(keyPointsMatch[1]);
-        } catch (e) {
-            console.error('Failed to parse key_points:', e);
-        }
+    // Try to find JSON object if wrapped in markdown code blocks
+    const jsonMatch = jsonStr.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    if (jsonMatch) {
+        jsonStr = jsonMatch[1];
     }
 
-    // Extract divergences
-    const divergencesMatch = llmResponse.match(/divergences:\s*(\[[\s\S]*?\])/);
-    if (divergencesMatch) {
-        try {
-            result.divergences = JSON.parse(divergencesMatch[1]);
-        } catch (e) {
-            console.error('Failed to parse divergences:', e);
-        }
+    // Remove any leading/trailing non-JSON text
+    const jsonStart = jsonStr.indexOf('{');
+    const jsonEnd = jsonStr.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+        jsonStr = jsonStr.substring(jsonStart, jsonEnd + 1);
     }
 
-    // Extract consensus
-    const consensusMatch = llmResponse.match(/consensus:\s*(.+?)(?=```|$)/s);
-    if (consensusMatch) {
-        result.consensus = consensusMatch[1].trim();
-    }
+    try {
+        const parsed: LLMResponseFormat = JSON.parse(jsonStr);
 
-    // Extract sentiment_distribution
-    const sentimentMatch = llmResponse.match(/sentiment_distribution:\s*(\{[\s\S]*?\})/);
-    if (sentimentMatch) {
-        try {
-            result.sentimentDistribution = JSON.parse(sentimentMatch[1]);
-        } catch (e) {
-            console.error('Failed to parse sentiment_distribution:', e);
-        }
-    }
-
-    // Extract themes
-    const themesMatch = llmResponse.match(/themes:\s*(\[[\s\S]*?\])/);
-    if (themesMatch) {
-        try {
-            const themesData = JSON.parse(themesMatch[1]);
-            result.themes = themesData.map((t: any) => ({
+        // Map LLM format to AnalysisData format
+        return {
+            keyPoints: parsed.key_points || [],
+            divergences: parsed.divergences || [],
+            consensus: parsed.consensus || '',
+            sentimentDistribution: {
+                positive: parsed.sentiment_distribution?.positive || 0,
+                neutral: parsed.sentiment_distribution?.neutral || 0,
+                negative: parsed.sentiment_distribution?.negative || 0
+            },
+            themes: (parsed.themes || []).map(t => ({
                 theme: t.theme,
                 occurrences: t.frequency
-            }));
-        } catch (e) {
-            console.error('Failed to parse themes:', e);
-        }
+            }))
+        };
+    } catch (error) {
+        console.error('Failed to parse LLM response:', error);
+        console.error('Response text:', llmResponse);
+        throw new Error('Invalid JSON response from LLM');
     }
-
-    return result;
 }
 
 /**
@@ -75,7 +59,7 @@ export function parseLLMResponse(llmResponse: string): Omit<AnalysisData, 'wordF
  * @returns Array of words with their frequencies (size)
  */
 export function generateWordFrequency(
-    personaResponses: { [personaId: string]: string },
+    personaResponses: PersonaResponses,
     options: {
         minWordLength?: number;
         maxWords?: number;
@@ -120,14 +104,17 @@ export function generateWordFrequency(
         .sort((a, b) => b[1] - a[1])
         .slice(0, maxWords);
 
-    // Find min and max frequencies for scaling
+    // Handle edge case of no words
+    if (sortedWords.length === 0) {
+        return [];
+    }
+
     const frequencies = sortedWords.map(([, count]) => count);
     const minFreq = Math.min(...frequencies);
     const maxFreq = Math.max(...frequencies);
 
-    // Scale frequencies to sizes (10-100 range for d3-cloud)
     const minSize = 10;
-    const maxSize = 1000;
+    const maxSize = 100;
 
     return sortedWords.map(([word, count]) => {
         // Linear scaling
@@ -144,14 +131,14 @@ export function generateWordFrequency(
 
 /**
  * Combines parsed LLM response with word frequency data
- * @param llmResponse - The raw text response from the LLM
+ * @param llmResponse - The raw text response from the LLM (should contain JSON)
  * @param personaResponses - Object containing persona UUIDs and their response texts
  * @param wordFreqOptions - Optional configuration for word frequency generation
  * @returns Complete AnalysisData object
  */
 export function generateCompleteAnalysis(
     llmResponse: string,
-    personaResponses: { [personaId: string]: string },
+    personaResponses: PersonaResponses,
     wordFreqOptions?: Parameters<typeof generateWordFrequency>[1]
 ): AnalysisData {
     const parsedData = parseLLMResponse(llmResponse);
