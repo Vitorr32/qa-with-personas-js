@@ -1,4 +1,5 @@
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from "react";
 import { Persona } from "../../utils/Persona";
 import { AlertTriangle } from "lucide-react";
@@ -10,6 +11,7 @@ import { errorToast, successToast } from "../../utils/Toasts";
 import LoadingContainer from "../utils/LoadingContainer";
 
 export default function RemovePersonasSection() {
+    const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     const [toDeleteList, setToDeleteList] = useState<Persona[]>([]);
@@ -102,8 +104,8 @@ export default function RemovePersonasSection() {
             className="space-y-6"
         >
             <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Remove Personas</h2>
-                <p className="text-gray-600">Select and remove personas</p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('remove.title')}</h2>
+                <p className="text-gray-600">{t('remove.subtitle')}</p>
             </div>
 
             <SearchBox setSearchQuery={setSearchQuery} setSelectedTags={setSelectedTags} searchQuery={searchQuery} selectedTags={selectedTags} injectWrapperClassNames="bg-white rounded-xl p-6 border border-gray-200 shadow-lg" />
@@ -111,7 +113,7 @@ export default function RemovePersonasSection() {
             <LoadingContainer isLoading={isLoadingPersonas}>
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">
-                        {items.length} Persona{items.length !== 1 ? 's' : ''} Found
+                        {t('remove.foundCount', { count: items.length })}
                     </h3>
 
                     <button
@@ -125,12 +127,12 @@ export default function RemovePersonasSection() {
                         {toDeleteList.length === 0 ? (
                             <>
                                 <AlertTriangle className="w-4 h-4" />
-                                No Personas Selected
+                                {t('remove.noSelected')}
                             </>
                         ) : (
                             <>
                                 <AlertTriangle className="w-4 h-4" />
-                                Remove {toDeleteList.length} Persona{toDeleteList.length !== 1 ? 's' : ''}
+                                {t('remove.removeCount', { count: toDeleteList.length })}
                             </>
                         )}
                     </button>
@@ -152,7 +154,7 @@ export default function RemovePersonasSection() {
                 {items.length === 0 && !isLoadingPersonas && (
                     <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
                         <div className="text-4xl mb-2">🔍</div>
-                        <p className="text-gray-600">No personas found</p>
+                        <p className="text-gray-600">{t('remove.noFound')}</p>
                     </div>
                 )}
 
@@ -193,6 +195,7 @@ export default function RemovePersonasSection() {
 }
 
 function ConfirmRemoveModal({ count, personaNames, onConfirm, onCancel }: any) {
+    const { t } = useTranslation();
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onCancel}>
             <motion.div
@@ -206,15 +209,15 @@ function ConfirmRemoveModal({ count, personaNames, onConfirm, onCancel }: any) {
                         <AlertTriangle className="w-6 h-6 text-red-600" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
-                        Confirm Removal
+                        {t('remove.confirmTitle')}
                     </h3>
                     <p className="text-gray-600 text-center mb-4">
-                        You are about to permanently delete <span className="font-semibold text-red-600">{count} persona{count !== 1 ? 's' : ''}</span>. This action cannot be undone.
+                        {t('remove.confirmText', { count })}
                     </p>
 
                     {/* List of personas to be removed */}
                     <div className="bg-gray-50 rounded-lg p-4 mb-6 max-h-48 overflow-y-auto">
-                        <p className="text-sm font-semibold text-gray-700 mb-2">Personas to be removed:</p>
+                        <p className="text-sm font-semibold text-gray-700 mb-2">{t('remove.toBeRemovedLabel')}</p>
                         <ul className="space-y-1">
                             {personaNames.slice(0, 10).map((name: string, i: number) => (
                                 <li key={i} className="text-sm text-gray-600 flex items-center gap-2">
@@ -224,7 +227,7 @@ function ConfirmRemoveModal({ count, personaNames, onConfirm, onCancel }: any) {
                             ))}
                             {personaNames.length > 10 && (
                                 <li className="text-sm text-gray-500 italic">
-                                    ... and {personaNames.length - 10} more
+                                    {t('remove.andMore', { count: personaNames.length - 10 })}
                                 </li>
                             )}
                         </ul>
@@ -235,13 +238,13 @@ function ConfirmRemoveModal({ count, personaNames, onConfirm, onCancel }: any) {
                             onClick={onCancel}
                             className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </button>
                         <button
                             onClick={onConfirm}
                             className="flex-1 px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors font-medium"
                         >
-                            Yes, Remove
+                            {t('remove.confirmButton')}
                         </button>
                     </div>
                 </div>

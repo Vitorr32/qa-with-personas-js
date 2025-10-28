@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Tag as TagIcon, Search, Loader } from 'lucide-react';
 import { Tag } from '../../utils/Tag';
@@ -23,6 +24,7 @@ function useDebouncedValue<T>(value: T, delay = 250) {
 }
 
 export default function TagPicker({ selectedTags = [], onTagPicked, title, allowNewTags = false }: TagPickerProps) {
+    const { t } = useTranslation();
     const [inputValue, setInputValue] = useState('');
     const debouncedInput = useDebouncedValue(inputValue, 250);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -152,7 +154,7 @@ export default function TagPicker({ selectedTags = [], onTagPicked, title, allow
                             <button
                                 onClick={() => handleRemoveTag(tag)}
                                 className="hover:bg-blue-700 rounded p-0.5 transition-colors"
-                                aria-label={`Remove ${tag.name}`}
+                                aria-label={t('tagpicker.ariaRemove', { name: tag.name })}
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -162,7 +164,7 @@ export default function TagPicker({ selectedTags = [], onTagPicked, title, allow
                         onClick={() => onTagPicked([])}
                         className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
                     >
-                        Clear all
+                        {t('tagpicker.clearAll')}
                     </button>
                 </div>
             )}
@@ -181,7 +183,7 @@ export default function TagPicker({ selectedTags = [], onTagPicked, title, allow
                             onFocus={() => {
                                 if (suggestions.length > 0) setShowDropdown(true);
                             }}
-                            placeholder="Type to search tags..."
+                            placeholder={t('tagpicker.inputPlaceholder')}
                             className="flex-1 text-base outline-none"
                             aria-autocomplete="list"
                             aria-expanded={showDropdown}
@@ -218,7 +220,7 @@ export default function TagPicker({ selectedTags = [], onTagPicked, title, allow
                                     allowNewTags ? (
                                         <div className="p-4">
                                             <div className="flex items-center justify-between">
-                                                <div className="text-sm text-gray-700">No tags found</div>
+                                                <div className="text-sm text-gray-700">{t('tagpicker.noTagsFound')}</div>
                                                 <button
                                                     type="button"
                                                     onClick={() => {
@@ -230,12 +232,12 @@ export default function TagPicker({ selectedTags = [], onTagPicked, title, allow
                                                     }}
                                                     className="px-3 py-1 bg-blue-600 cursor-pointer text-white rounded-md text-sm"
                                                 >
-                                                    Create "{inputValue}" tag
+                                                    {t('tagpicker.createTag', { name: inputValue })}
                                                 </button>
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="p-4 text-sm text-gray-500">No tags found</div>
+                                        <div className="p-4 text-sm text-gray-500">{t('tagpicker.noTagsFound')}</div>
                                     )
                                 )}
                             </div>
@@ -244,7 +246,7 @@ export default function TagPicker({ selectedTags = [], onTagPicked, title, allow
                 </AnimatePresence>
 
                 {inputValue.length !== 0 && !isFetching && suggestions.length === 0 && (
-                    <p className="text-sm text-gray-500 mt-2">No tags found matching "{inputValue}"</p>
+                    <p className="text-sm text-gray-500 mt-2">{t('tagpicker.noMatchingFound', { value: inputValue })}</p>
                 )}
             </div>
         </>

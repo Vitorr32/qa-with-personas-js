@@ -7,12 +7,13 @@ interface SentimentChartProps {
 export default function SentimentChart({ sentimentDistribution }: SentimentChartProps) {
     const total = sentimentDistribution.positive + sentimentDistribution.neutral + sentimentDistribution.negative;
 
+    const { t } = require('react-i18next');
     return (
         <div className="space-y-4">
             {[
-                { label: 'Positive', value: sentimentDistribution.positive, color: 'bg-green-500', lightColor: 'bg-green-100' },
-                { label: 'Neutral', value: sentimentDistribution.neutral, color: 'bg-gray-500', lightColor: 'bg-gray-100' },
-                { label: 'Negative', value: sentimentDistribution.negative, color: 'bg-red-500', lightColor: 'bg-red-100' }
+                { label: t('sentiment.positive'), value: sentimentDistribution.positive, color: 'bg-green-500', lightColor: 'bg-green-100' },
+                { label: t('sentiment.neutral'), value: sentimentDistribution.neutral, color: 'bg-gray-500', lightColor: 'bg-gray-100' },
+                { label: t('sentiment.negative'), value: sentimentDistribution.negative, color: 'bg-red-500', lightColor: 'bg-red-100' }
             ].map(({ label, value, color, lightColor }) => {
                 const percentage = (value / total) * 100;
 

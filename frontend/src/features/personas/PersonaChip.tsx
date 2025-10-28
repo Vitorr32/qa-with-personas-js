@@ -1,5 +1,6 @@
 
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import { Persona } from '../../utils/Persona';
 import { getPersonaAvatar } from '../../utils/Avatar';
@@ -15,6 +16,7 @@ export default function PersonaChip({
     onRemove,
     animationDelay = 0
 }: PersonaChipProps) {
+    const { t } = useTranslation();
     return (
         <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
@@ -37,7 +39,7 @@ export default function PersonaChip({
             <button
                 onClick={() => onRemove(persona)}
                 className="flex-shrink-0 p-1 hover:bg-white/20 rounded-full transition-colors"
-                aria-label={`Remove ${persona.name}`}
+                aria-label={t('personachip.ariaRemove', { name: persona.name })}
             >
                 <X className="w-3.5 h-3.5" />
             </button>

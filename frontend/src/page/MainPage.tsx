@@ -117,8 +117,8 @@ export default function MainPage() {
                             className="text-center text-gray-600 mb-8 text-lg"
                         >
                             {toAskList.length > 0
-                                ? `Get answers from ${toAskList.length} selected persona${toAskList.length > 1 ? 's' : ''}`
-                                : 'Get answers from thousands of specialized personas'}
+                                ? t('mainpage.selectedPersonaCount', { count: toAskList.length })
+                                : t('mainpage.defaultPersonaText')}
                         </motion.p>
 
                         {/* Question Input Box */}
@@ -138,15 +138,15 @@ export default function MainPage() {
                                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {toAskList.length > 0
-                                    ? `Ask ${toAskList.length} Persona${toAskList.length > 1 ? 's' : ''}`
-                                    : 'Ask All Personas'}
+                                    ? t('mainpage.askPersona', { count: toAskList.length })
+                                    : t('mainpage.askAllPersonas')}
                             </button>
                             <button
                                 onClick={handleFilterToggle}
                                 className="px-6 py-3 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium border border-gray-300 flex items-center gap-2"
                             >
                                 <Filter className="w-4 h-4" />
-                                {toAskList.length > 0 ? 'Edit Selection' : 'Select Personas'}
+                                {toAskList.length > 0 ? t('mainpage.editSelection') : t('mainpage.selectPersonas')}
                             </button>
                         </div>
 
@@ -157,7 +157,7 @@ export default function MainPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="mt-8 bg-white rounded-xl p-6 border border-gray-200"
                             >
-                                <h3 className="text-sm font-semibold text-gray-700 mb-3">Selected Personas:</h3>
+                                <h3 className="text-sm font-semibold text-gray-700 mb-3">{t('mainpage.selectedPersonas')}</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {toAskList.map((persona, index) => {
                                         return persona ? (
@@ -185,17 +185,17 @@ export default function MainPage() {
                     >
                         <div className="max-w-7xl mx-auto">
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-2xl font-bold text-gray-800">Select Personas</h2>
+                                <h2 className="text-2xl font-bold text-gray-800">{t('mainpage.selectPersonas')}</h2>
                                 <div className="flex items-center gap-3">
                                     <span className="text-sm text-gray-600 bg-blue-50 px-4 py-2 rounded-full font-medium">
-                                        {toAskList.length} selected
+                                        {t('mainpage.selectedBadge', { count: toAskList.length })}
                                     </span>
                                     <button
                                         onClick={handleBackToQuestion}
                                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
                                     >
                                         <Check className="w-4 h-4" />
-                                        Done
+                                        {t('common.done')}
                                     </button>
                                 </div>
                             </div>

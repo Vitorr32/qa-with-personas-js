@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { MessageSquare, X } from 'lucide-react';
 
 interface QuestionInputProps {
@@ -18,6 +19,7 @@ export default function QuestionInput({
     handleFileChange,
     handleSubmitQuestion
 }: QuestionInputProps) {
+    const { t } = useTranslation();
     return (
         <motion.div layout className="relative">
             <div className="relative bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden hover:shadow-2xl transition-shadow">
@@ -28,7 +30,7 @@ export default function QuestionInput({
                         value={questionInput}
                         onChange={(e) => setQuestionInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && questionInput.trim() && handleSubmitQuestion()}
-                        placeholder="What would you like to ask?"
+                        placeholder={t('questioninput.placeholder')}
                         className="flex-1 text-lg outline-none text-gray-800 placeholder-gray-400"
                     />
                     <label className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors">

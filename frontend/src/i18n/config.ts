@@ -17,6 +17,141 @@ const resources = {
                 askAll: 'Ask All Personas',
                 filter: 'Filter Personas',
                 closeFilter: 'Close Filters'
+            },
+            mainpage: {
+                selectedPersonaCount: 'Get answers from {{count}} selected persona{{count, plural, one {} other {s}}}',
+                defaultPersonaText: 'Get answers from thousands of specialized personas',
+                askPersona: 'Ask {{count}} Persona{{count, plural, one {} other {s}}}',
+                askAllPersonas: 'Ask All Personas',
+                selectPersonas: 'Select Personas',
+                editSelection: 'Edit Selection',
+                selectedPersonas: 'Selected Personas:',
+                selectedBadge: '{{count}} selected',
+                done: 'Done'
+            },
+            response: {
+                personaResponses: 'Persona Responses',
+                askingPersonasAbout: 'Asking {{count}} persona{{count, plural, one {} other {s}}} about: "{{question}}"',
+                responsesTab: 'Responses',
+                analysisTab: 'Analysis',
+                completedCounter: '{{completed}} / {{total}} completed',
+                allReceived: 'All responses received',
+                preparingPersonas: 'Preparing personas and uploading files...'
+            },
+            personagrid: {
+                foundCount: '{{count}} Persona{{count, plural, one {} other {s}}} Found',
+                allSelected: 'All Selected',
+                addAll: 'Add All to List',
+                noFound: 'No personas found',
+                tryAdjustSearch: 'Try adjusting your search or filters',
+                loadMore: 'Load More'
+            },
+            remove: {
+                title: 'Remove Personas',
+                subtitle: 'Select and remove personas',
+                foundCount: '{{count}} Persona{{count, plural, one {} other {s}}} Found',
+                noSelected: 'No Personas Selected',
+                removeCount: 'Remove {{count}} Persona{{count, plural, one {} other {s}}}',
+                noFound: 'No personas found',
+                confirmTitle: 'Confirm Removal',
+                confirmText: 'You are about to permanently delete {{count}} persona{{count, plural, one {} other {s}}}. This action cannot be undone.',
+                toBeRemovedLabel: 'Personas to be removed:',
+                andMore: '... and {{count}} more',
+                confirmButton: 'Yes, Remove'
+            },
+            common: {
+                done: 'Done',
+                cancel: 'Cancel'
+            },
+            personaadd: {
+                title: 'Add New Persona',
+                subtitle: 'Create a new persona with custom attributes',
+                avatarLabel: 'Avatar (Optional)',
+                chooseImage: 'Choose Image',
+                nameLabel: 'Name *',
+                namePlaceholder: 'e.g., Code Expert',
+                greetingLabel: 'Greeting *',
+                greetingPlaceholder: 'e.g., Hello! I\'m here to help you code.',
+                descriptionLabel: 'Description *',
+                descriptionPlaceholder: 'Describe the persona\'s expertise and capabilities...',
+                tagsLabel: 'Tags',
+                createButton: 'Create Persona'
+            },
+            prompts: {
+                title: 'System Prompts',
+                subtitle: 'Configure the default prompts for the system',
+                mainLabel: 'Main Prompt',
+                mainHelp: 'Used for general queries',
+                mainPlaceholder: 'Enter the main system prompt...',
+                analystLabel: 'Analyst Prompt',
+                analystHelp: 'Used for analyzing responses',
+                analystPlaceholder: 'Enter the analyst prompt...',
+                charCount: '{{count}} characters',
+                saveButton: 'Save Prompts',
+                saving: 'Saving...',
+                saved: 'Saved!'
+            },
+            personaeditmodal: {
+                personachip: {
+                    ariaRemove: 'Remove {{name}}'
+                },
+                personacard: {
+                    ariaViewDetails: 'View details',
+                    description: 'Description',
+                    tagsLabel: 'Tags ({{count}})',
+                    metadata: 'Metadata',
+                    id: 'ID',
+                    totalTags: 'Total Tags',
+                    close: 'Close',
+                    addToSelection: 'Add to Selection',
+                    removeFromSelection: 'Remove from Selection'
+                },
+                title: 'Edit Persona',
+                nameLabel: 'Name',
+                greetingLabel: 'Greeting',
+                descriptionLabel: 'Description',
+                tagsLabel: 'Tags',
+                addTagPlaceholder: 'Add tag...',
+                addButton: 'Add',
+                saveChangesButton: 'Save Changes'
+            },
+            tagpicker: {
+            questioninput: {
+            header: {
+            analysistab: {
+            sentiment: {
+                positive: 'Positive',
+                neutral: 'Neutral',
+                negative: 'Negative'
+            },
+            responsecard: {
+                waiting: 'Waiting...',
+                responding: 'Responding...',
+                completed: 'Completed',
+                error: 'Error',
+                idle: 'Idle',
+                waitingInQueue: 'Waiting in queue...',
+                failedToGetResponse: 'Failed to get response',
+                completedIn: 'Completed in {{seconds}}s'
+            },
+                analysisTitle: 'AI Analysis',
+                subtitle: 'Comprehensive response analysis',
+                startAnalysis: 'Start Analysis',
+                analyzing: 'Analyzing...',
+                analysisComplete: 'Analysis Complete'
+            },
+                home: 'Home',
+                settings: 'Settings',
+                changeLanguage: 'Change language'
+            },
+                placeholder: 'What would you like to ask?'
+            },
+                clearAll: 'Clear all',
+                inputPlaceholder: 'Type to search tags...',
+                ariaRemove: 'Remove {{name}}',
+                noTagsFound: 'No tags found',
+                createTag: 'Create "{{name}}" tag',
+                noMatchingFound: 'No tags found matching "{{value}}"'
             }
         }
     },
@@ -34,6 +169,7 @@ const resources = {
                 filter: 'Filtrar Personas',
                 closeFilter: 'Cerrar Filtros'
             }
+            // TODO: Add translations for new keys in Spanish
         }
     },
     ja: {
@@ -50,6 +186,7 @@ const resources = {
                 filter: 'ペルソナをフィルター',
                 closeFilter: 'フィルターを閉じる'
             }
+            // TODO: Add translations for new keys in Japanese
         }
     }
 };

@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Tag } from '../../utils/Tag';
 
 export default function EditPersonaModal({ persona, onClose, onSave }: any) {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState(persona);
     const [newTag, setNewTag] = useState('');
 
@@ -23,7 +25,7 @@ export default function EditPersonaModal({ persona, onClose, onSave }: any) {
                 className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             >
                 <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 text-white flex items-center justify-between">
-                    <h3 className="text-xl font-bold">Edit Persona</h3>
+                    <h3 className="text-xl font-bold">{t('personaeditmodal.title')}</h3>
                     <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
                         <X className="w-5 h-5" />
                     </button>
@@ -31,7 +33,7 @@ export default function EditPersonaModal({ persona, onClose, onSave }: any) {
 
                 <div className="p-6 space-y-4">
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Name</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t('personaeditmodal.nameLabel')}</label>
                         <input
                             type="text"
                             value={formData.name}
@@ -41,7 +43,7 @@ export default function EditPersonaModal({ persona, onClose, onSave }: any) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Greeting</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t('personaeditmodal.greetingLabel')}</label>
                         <input
                             type="text"
                             value={formData.greeting}
@@ -51,7 +53,7 @@ export default function EditPersonaModal({ persona, onClose, onSave }: any) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t('personaeditmodal.descriptionLabel')}</label>
                         <textarea
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -60,25 +62,25 @@ export default function EditPersonaModal({ persona, onClose, onSave }: any) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Tags</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t('personaeditmodal.tagsLabel')}</label>
                         <div className="flex gap-2 mb-2">
                             <input
                                 type="text"
                                 value={newTag}
                                 onChange={(e) => setNewTag(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-                                placeholder="Add tag..."
+                                placeholder={t('personaeditmodal.addTagPlaceholder')}
                                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                             />
                             <button onClick={handleAddTag} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                Add
+                                {t('personaeditmodal.addButton')}
                             </button>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {formData.tags.map((tag: Tag) => (
                                 <span key={tag.id} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm flex items-center gap-2">
                                     {tag.name}
-                                    <button onClick={() => setFormData({ ...formData, tags: formData.tags.filter((t: string) => t !== tag) })}>
+                                    <button onClick={() => setFormData({ ...formData, tags: formData.tags.filter((t: Tag) => t.id !== tag.id) })}>
                                         <X className="w-3 h-3" />
                                     </button>
                                 </span>
@@ -89,10 +91,10 @@ export default function EditPersonaModal({ persona, onClose, onSave }: any) {
 
                 <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
                     <button onClick={onClose} className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
-                        Cancel
+                        {t('common.cancel')}
                     </button>
                     <button onClick={() => onSave(formData)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        Save Changes
+                        {t('personaeditmodal.saveChangesButton')}
                     </button>
                 </div>
             </motion.div>

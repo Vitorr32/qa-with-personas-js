@@ -1,4 +1,5 @@
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
+import { useTranslation } from 'react-i18next';
 import { Upload } from "lucide-react";
 import { useState } from "react";
 import { useAddPersonaMutation } from '../../store/apiSlice';
@@ -9,6 +10,7 @@ import { errorToast, successToast } from "../../utils/Toasts";
 import LoadingContainer from "../utils/LoadingContainer";
 
 export default function AddPersonaSection() {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({ name: '', avatar: '', greeting: '', description: '', tags: [] as string[] });
     const [selectedTags, setSelectedTags] = useState([] as Tag[]);
     const [avatarPreview, setAvatarPreview] = useState('');
@@ -110,14 +112,14 @@ export default function AddPersonaSection() {
             className="space-y-6"
         >
             <LoadingContainer isLoading={isSubmitting}>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Add New Persona</h2>
-                <p className="text-gray-600">Create a new persona with custom attributes</p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('personaadd.title')}</h2>
+                <p className="text-gray-600">{t('personaadd.subtitle')}</p>
 
 
                 <div className="bg-white rounded-xl p-6 mt-6 border border-gray-200 shadow-lg space-y-4">
                     {/* Avatar Upload */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Avatar (Optional)</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t('personaadd.avatarLabel')}</label>
                         <div className="flex items-center gap-4">
                             {avatarPreview ? (
                                 <img src={avatarPreview} alt="Preview" className="w-20 h-20 rounded-full object-cover" />
@@ -128,48 +130,48 @@ export default function AddPersonaSection() {
                             )}
                             <label className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors">
                                 <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                                Choose Image
+                                {t('personaadd.chooseImage')}
                             </label>
                         </div>
                     </div>
 
                     {/* Name */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Name *</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t('personaadd.nameLabel')}</label>
                         <input
                             type="text"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            placeholder="e.g., Code Expert"
+                            placeholder={t('personaadd.namePlaceholder')}
                         />
                     </div>
 
                     {/* Greeting */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Greeting *</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t('personaadd.greetingLabel')}</label>
                         <input
                             type="text"
                             value={formData.greeting}
                             onChange={(e) => setFormData({ ...formData, greeting: e.target.value })}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            placeholder="e.g., Hello! I'm here to help you code."
+                            placeholder={t('personaadd.greetingPlaceholder')}
                         />
                     </div>
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Description *</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t('personaadd.descriptionLabel')}</label>
                         <textarea
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                            placeholder="Describe the persona's expertise and capabilities..."
+                            placeholder={t('personaadd.descriptionPlaceholder')}
                         />
                     </div>
 
                     {/* Tags */}
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tags</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">{t('personaadd.tagsLabel')}</label>
                     <TagPicker selectedTags={selectedTags} onTagPicked={(tags) => setSelectedTags(tags)} allowNewTags />
 
                     {/* Submit */}
@@ -178,7 +180,7 @@ export default function AddPersonaSection() {
                         disabled={!formData.name || !formData.greeting || !formData.description}
                         className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Create Persona
+                        {t('personaadd.createButton')}
                     </button>
                 </div>
             </LoadingContainer>

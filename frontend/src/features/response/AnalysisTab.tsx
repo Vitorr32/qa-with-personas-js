@@ -1,4 +1,5 @@
 import { AlertCircle, BarChart3, Brain, CheckCircle2, Hash, Loader2, MessageSquare, PieChart } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { useFetchAnalysisMutation } from "../../store/apiSlice";
@@ -17,6 +18,7 @@ interface AnalysisTabProps {
 }
 
 export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
+    const { t } = useTranslation();
     const question = useSelector((state: RootState) => state.question.question);
     const responses = useSelector((state: RootState) => state.question.responses);
     const fileIds = useSelector((state: RootState) => state.question.fileIds);
@@ -30,9 +32,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
             setAnalysisStatus('pending');
             // Trigger analysis API call
             const formattedResponses = Object.entries(responses).map(([persona, resp]) => ({ persona, response: resp }));
-            console.log("Starting analysis with responses:", formattedResponses);
             const analysisRaw = await getAnalysis({ question, responses: formattedResponses, fileIds });
-            console.log("Analysis result:", analysisRaw);
             setAnalysisData(generateCompleteAnalysis(analysisRaw.data?.analysis || "", responses));
             setAnalysisStatus('completed');
         } catch (err) {
@@ -50,8 +50,8 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                             <Brain className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-gray-900">AI Analysis</h2>
-                            <p className="text-sm text-gray-600">Comprehensive response analysis</p>
+                            <h2 className="text-xl font-bold text-gray-900">{t('analysistab.analysisTitle')}</h2>
+                            <p className="text-sm text-gray-600">{t('analysistab.subtitle')}</p>
                         </div>
                     </div>
 
@@ -61,21 +61,21 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                             disabled={!canAnalyze}
                             className="px-6 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                         >
-                            Start Analysis
+                            {t('analysistab.startAnalysis')}
                         </button>
                     )}
 
                     {analysisStatus === "pending" && (
                         <div className="flex items-center gap-2 text-purple-600">
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            <span className="font-medium">Analyzing...</span>
+                            <span className="font-medium">{t('analysistab.analyzing')}</span>
                         </div>
                     )}
 
                     {analysisStatus === "completed" && (
                         <div className="flex items-center gap-2 text-green-600">
                             <CheckCircle2 className="w-5 h-5" />
-                            <span className="font-medium">Analysis Complete</span>
+                            <span className="font-medium">{t('analysistab.analysisComplete')}</span>
                         </div>
                     )}
                 </div>

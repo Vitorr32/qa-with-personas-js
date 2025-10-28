@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { Persona } from "../../utils/Persona";
 import { AlertCircle, CheckCircle2, Clock, Loader2, MessageSquare } from "lucide-react";
@@ -23,6 +24,7 @@ interface ResponseCardProps {
 }
 
 export default function ResponseCard({ persona, broadcastState }: ResponseCardProps) {
+    const { t } = useTranslation();
     const dispatch = useDispatch();
     const contentRef = useRef<HTMLDivElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -235,15 +237,15 @@ export default function ResponseCard({ persona, broadcastState }: ResponseCardPr
     const getStatusText = () => {
         switch (status) {
             case 'pending':
-                return 'Waiting...';
+                return t('responsecard.waiting');
             case 'streaming':
-                return 'Responding...';
+                return t('responsecard.responding');
             case 'completed':
-                return 'Completed';
+                return t('responsecard.completed');
             case 'error':
-                return 'Error';
+                return t('responsecard.error');
             default:
-                return 'Idle';
+                return t('responsecard.idle');
         }
     };
 
@@ -285,7 +287,7 @@ export default function ResponseCard({ persona, broadcastState }: ResponseCardPr
                     <div className="flex items-center justify-center py-8 text-gray-400">
                         <div className="text-center">
                             <Clock className="w-8 h-8 mx-auto mb-2" />
-                            <p className="text-sm">Waiting in queue...</p>
+                            <p className="text-sm">{t('responsecard.waitingInQueue')}</p>
                         </div>
                     </div>
                 )}
@@ -294,7 +296,7 @@ export default function ResponseCard({ persona, broadcastState }: ResponseCardPr
                     <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
                         <AlertCircle className="w-5 h-5 flex-shrink-0" />
                         <div>
-                            <p className="font-medium">Failed to get response</p>
+                            <p className="font-medium">{t('responsecard.failedToGetResponse')}</p>
                             <p className="text-sm mt-1">{error}</p>
                         </div>
                     </div>
@@ -323,7 +325,9 @@ export default function ResponseCard({ persona, broadcastState }: ResponseCardPr
 
             {completedAt && (
                 <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 text-xs text-gray-500">
-                    Completed in {Math.round((completedAt.getTime() - (startedAt?.getTime() || 0)) / 1000)}s
+                    {t('responsecard.completedIn', {
+                        seconds: Math.round((completedAt.getTime() - (startedAt?.getTime() || 0)) / 1000)
+                    })}
                 </div>
             )}
         </motion.div>

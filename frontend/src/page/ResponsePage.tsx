@@ -10,8 +10,10 @@ import { useUploadOpenAIFileMutation, useGetPersonasQuery } from '../store/apiSl
 import { setPersonas, setFilesIds, cleanResponses } from '../store/questionSlice';
 import { extractMessageFromErrorAndToast } from '../utils/Toasts';
 import AnalysisTab from '../features/response/AnalysisTab';
+import { useTranslation } from 'react-i18next';
 
 export default function ResponsesPage() {
+    const { t } = useTranslation();
     const question = useSelector((state: RootState) => state.question.question);
     const toAskPersonas = useSelector((state: RootState) => state.question.personas);
     const attachedFiles = useSelector((state: RootState) => state.question.attachedFiles);
@@ -100,10 +102,12 @@ export default function ResponsesPage() {
             <div className="max-w-7xl mx-auto px-4 py-8">
                 {/* Header */}
                 <div className="mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Persona Responses</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('response.personaResponses')}</h1>
                     <p className="text-gray-600">
-                        Asking {toAskPersonas.length} persona{toAskPersonas.length !== 1 ? 's' : ''} about:
-                        <span className="font-medium text-gray-900 ml-2">"{question}"</span>
+                        {t('response.askingPersonasAbout', {
+                            count: toAskPersonas.length,
+                            question: question
+                        })}
                     </p>
                 </div>
 
@@ -119,7 +123,7 @@ export default function ResponsesPage() {
                         >
                             <div className="flex items-center gap-2">
                                 <MessageSquare className="w-4 h-4" />
-                                Responses
+                                {t('response.responsesTab')}
                                 {Object.keys(responses).length > 0 && (
                                     <span className={`px-2 py-0.5 text-xs rounded-full ${allCompleted ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
                                         }`}>
@@ -137,10 +141,7 @@ export default function ResponsesPage() {
                         >
                             <div className="flex items-center gap-2">
                                 <Brain className="w-4 h-4" />
-                                Analysis
-                                {/* TODO Later {analysis.status === 'completed' && (
-                                    <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                )} */}
+                                {t('response.analysisTab')}
                             </div>
                         </button>
                     </div>
@@ -150,7 +151,7 @@ export default function ResponsesPage() {
                     <div className="mb-6 flex items-center justify-between">
                         {Object.keys(responses).length > 0 && (
                             <div className="text-sm text-gray-600">
-                                {completedCount} / {Object.keys(responses).length} completed
+                                {t('response.completedCounter', { completed: completedCount, total: Object.keys(responses).length })}
                             </div>
                         )}
 
@@ -161,7 +162,7 @@ export default function ResponsesPage() {
                                 className="flex items-center gap-2 text-green-600 font-medium"
                             >
                                 <CheckCircle2 className="w-5 h-5" />
-                                All responses received
+                                {t('response.allReceived')}
                             </motion.div>
                         )}
                     </div>
@@ -178,7 +179,7 @@ export default function ResponsesPage() {
                             transition={{ duration: 0.2 }}
                         >
                             {isSettingUp ? (
-                                <div className="p-6 text-center text-gray-600">Preparing personas and uploading files...</div>
+                                <div className="p-6 text-center text-gray-600">{t('response.preparingPersonas')}</div>
                             ) : (
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     {toAskPersonas.map(persona => {

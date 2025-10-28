@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Info, X, Tag } from 'lucide-react';
 import { Persona } from '../../utils/Persona';
@@ -14,6 +15,7 @@ interface PersonaCardProps {
 
 
 export default function PersonaCard({ persona, isSelected, onToggleSelect, animationDelay = 0 }: PersonaCardProps) {
+    const { t } = useTranslation();
     const [showModal, setShowModal] = useState(false);
 
     const handleCardClick = (e: React.MouseEvent) => {
@@ -80,7 +82,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                     <button
                         onClick={handleDetailsClick}
                         className="details-button flex-shrink-0 ml-2 p-2 hover:bg-gray-200 rounded-lg transition-colors"
-                        aria-label="View details"
+                        aria-label={t('personacard.ariaViewDetails')}
                     >
                         <Info className="w-4 h-4 text-gray-600" />
                     </button>
@@ -130,7 +132,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                                 <div className="mb-6">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
                                         <Info className="w-5 h-5 text-blue-600" />
-                                        Description
+                                        {t('personacard.description')}
                                     </h3>
                                     <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                                         {persona.description}
@@ -141,17 +143,17 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                                 <div className="mb-6">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
                                         <Tag className="w-5 h-5 text-blue-600" />
-                                        Tags ({persona.tags.length})
+                                        {t('personacard.tagsLabel', { count: persona.tags.length })}
                                     </h3>
                                     <TagChipList tags={persona.tags} />
                                 </div>
 
                                 {/* Metadata */}
                                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Metadata</h3>
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('personacard.metadata')}</h3>
                                     <div className="text-sm text-gray-600 space-y-1">
-                                        <p><span className="font-medium">ID:</span> {persona.id}</p>
-                                        <p><span className="font-medium">Total Tags:</span> {persona.tags.length}</p>
+                                        <p><span className="font-medium">{t('personacard.id')}:</span> {persona.id}</p>
+                                        <p><span className="font-medium">{t('personacard.totalTags')}:</span> {persona.tags.length}</p>
                                     </div>
                                 </div>
                             </div>
@@ -162,7 +164,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                                     onClick={() => setShowModal(false)}
                                     className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-medium"
                                 >
-                                    Close
+                                    {t('personacard.close')}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -174,7 +176,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                                         : 'bg-blue-600 text-white hover:bg-blue-700'
                                         }`}
                                 >
-                                    {isSelected ? 'Remove from Selection' : 'Add to Selection'}
+                                    {isSelected ? t('personacard.removeFromSelection') : t('personacard.addToSelection')}
                                 </button>
                             </div>
                         </motion.div>

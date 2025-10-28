@@ -22,7 +22,7 @@ export default function PersonaGrid({
     onToggleSelect,
     onAddAllFiltered
 }: PersonaGridProps) {
-
+    const { t } = require('react-i18next');
     const [pageSize] = useState(20);
     const [cursor, setCursor] = useState<string | undefined>(undefined);
     const [items, setItems] = useState<Persona[]>([]);
@@ -70,7 +70,7 @@ export default function PersonaGrid({
         <div>
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
-                    {items.length} Persona{items.length !== 1 ? 's' : ''} Found
+                    {t('personagrid.foundCount', { count: items.length })}
                 </h3>
 
                 {items.length > 0 && (
@@ -85,12 +85,12 @@ export default function PersonaGrid({
                         {allFilteredSelected ? (
                             <>
                                 <Check className="w-4 h-4" />
-                                All Selected
+                                {t('personagrid.allSelected')}
                             </>
                         ) : (
                             <>
                                 <Plus className="w-4 h-4" />
-                                Add All to List
+                                {t('personagrid.addAll')}
                             </>
                         )}
                     </button>
@@ -117,8 +117,8 @@ export default function PersonaGrid({
                         className="text-center py-16"
                     >
                         <div className="text-6xl mb-4">🔍</div>
-                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No personas found</h3>
-                        <p className="text-gray-500">Try adjusting your search or filters</p>
+                        <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('personagrid.noFound')}</h3>
+                        <p className="text-gray-500">{t('personagrid.tryAdjustSearch')}</p>
                     </motion.div>
                 )}
                 {hasMore && (
@@ -127,7 +127,7 @@ export default function PersonaGrid({
                             onClick={() => setCursor(items[items.length - 1].id)}
                             className="px-6 py-3 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium border border-gray-300"
                         >
-                            Load More
+                            {t('personagrid.loadMore')}
                         </button>
                     </div>
                 )}
