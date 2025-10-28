@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useTranslation } from 'react-i18next';
 
 interface SentimentChartProps {
     sentimentDistribution: { positive: number; neutral: number; negative: number }
@@ -7,7 +8,7 @@ interface SentimentChartProps {
 export default function SentimentChart({ sentimentDistribution }: SentimentChartProps) {
     const total = sentimentDistribution.positive + sentimentDistribution.neutral + sentimentDistribution.negative;
 
-    const { t } = require('react-i18next');
+    const { t } = useTranslation();
     return (
         <div className="space-y-4">
             {[

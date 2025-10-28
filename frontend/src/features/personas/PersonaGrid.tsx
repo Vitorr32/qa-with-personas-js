@@ -1,11 +1,12 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { Check, LoaderPinwheel, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Check, Plus } from 'lucide-react';
 import { Persona } from '../../utils/Persona';
 import PersonaCard from './PersonaCard';
 import { useEffect, useMemo, useState } from 'react';
 import { Tag } from '../../utils/Tag';
 import { useGetPersonasQuery } from '../../store/apiSlice';
 import LoadingContainer from '../utils/LoadingContainer';
+import { useTranslation } from 'react-i18next';
 
 interface PersonaGridProps {
     searchQuery: string;
@@ -22,7 +23,7 @@ export default function PersonaGrid({
     onToggleSelect,
     onAddAllFiltered
 }: PersonaGridProps) {
-    const { t } = require('react-i18next');
+    const { t } = useTranslation();
     const [pageSize] = useState(20);
     const [cursor, setCursor] = useState<string | undefined>(undefined);
     const [items, setItems] = useState<Persona[]>([]);

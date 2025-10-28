@@ -19,9 +19,11 @@ const resources = {
                 closeFilter: 'Close Filters'
             },
             mainpage: {
-                selectedPersonaCount: 'Get answers from {{count}} selected persona{{count, plural, one {} other {s}}}',
+                selectedPersonaCount_one: 'Get answers from {{count}} selected persona',
+                selectedPersonaCount_other: 'Get answers from {{count}} selected personas',
                 defaultPersonaText: 'Get answers from thousands of specialized personas',
-                askPersona: 'Ask {{count}} Persona{{count, plural, one {} other {s}}}',
+                askPersona_one: 'Ask {{count}} Persona',
+                askPersona_other: 'Ask {{count}} Personas',
                 askAllPersonas: 'Ask All Personas',
                 selectPersonas: 'Select Personas',
                 editSelection: 'Edit Selection',
@@ -31,7 +33,8 @@ const resources = {
             },
             response: {
                 personaResponses: 'Persona Responses',
-                askingPersonasAbout: 'Asking {{count}} persona{{count, plural, one {} other {s}}} about: "{{question}}"',
+                askingPersonasAbout_one: 'Asking {{count}} persona about: "{{question}}"',
+                askingPersonasAbout_other: 'Asking {{count}} personas about: "{{question}}"',
                 responsesTab: 'Responses',
                 analysisTab: 'Analysis',
                 completedCounter: '{{completed}} / {{total}} completed',
@@ -39,7 +42,8 @@ const resources = {
                 preparingPersonas: 'Preparing personas and uploading files...'
             },
             personagrid: {
-                foundCount: '{{count}} Persona{{count, plural, one {} other {s}}} Found',
+                foundCount_one: '{{count}} Persona Found',
+                foundCount_other: '{{count}} Personas Found',
                 allSelected: 'All Selected',
                 addAll: 'Add All to List',
                 noFound: 'No personas found',
@@ -49,12 +53,15 @@ const resources = {
             remove: {
                 title: 'Remove Personas',
                 subtitle: 'Select and remove personas',
-                foundCount: '{{count}} Persona{{count, plural, one {} other {s}}} Found',
+                foundCount_one: '{{count}} Persona Found',
+                foundCount_other: '{{count}} Personas Found',
                 noSelected: 'No Personas Selected',
-                removeCount: 'Remove {{count}} Persona{{count, plural, one {} other {s}}}',
+                removeCount_one: 'Remove {{count}} Persona',
+                removeCount_other: 'Remove {{count}} Personas',
                 noFound: 'No personas found',
                 confirmTitle: 'Confirm Removal',
-                confirmText: 'You are about to permanently delete {{count}} persona{{count, plural, one {} other {s}}}. This action cannot be undone.',
+                confirmText_one: 'You are about to permanently delete {{count}} persona. This action cannot be undone.',
+                confirmText_other: 'You are about to permanently delete {{count}} personas. This action cannot be undone.',
                 toBeRemovedLabel: 'Personas to be removed:',
                 andMore: '... and {{count}} more',
                 confirmButton: 'Yes, Remove'
@@ -92,20 +99,6 @@ const resources = {
                 saved: 'Saved!'
             },
             personaeditmodal: {
-                personachip: {
-                    ariaRemove: 'Remove {{name}}'
-                },
-                personacard: {
-                    ariaViewDetails: 'View details',
-                    description: 'Description',
-                    tagsLabel: 'Tags ({{count}})',
-                    metadata: 'Metadata',
-                    id: 'ID',
-                    totalTags: 'Total Tags',
-                    close: 'Close',
-                    addToSelection: 'Add to Selection',
-                    removeFromSelection: 'Remove from Selection'
-                },
                 title: 'Edit Persona',
                 nameLabel: 'Name',
                 greetingLabel: 'Greeting',
@@ -115,14 +108,42 @@ const resources = {
                 addButton: 'Add',
                 saveChangesButton: 'Save Changes'
             },
+            personachip: {
+                ariaRemove: 'Remove {{name}}'
+            },
+            personacard: {
+                ariaViewDetails: 'View details',
+                description: 'Description',
+                tagsLabel: 'Tags ({{count}})',
+                metadata: 'Metadata',
+                id: 'ID',
+                totalTags: 'Total Tags',
+                close: 'Close',
+                addToSelection: 'Add to Selection',
+                removeFromSelection: 'Remove from Selection'
+            },
             tagpicker: {
-            questioninput: {
+                clearAll: 'Clear all',
+                inputPlaceholder: 'Type to search tags...',
+                ariaRemove: 'Remove {{name}}',
+                noTagsFound: 'No tags found',
+                createTag: 'Create "{{name}}" tag',
+                noMatchingFound: 'No tags found matching "{{value}}"'
+            },
             header: {
+                home: 'Home',
+                settings: 'Settings',
+                changeLanguage: 'Change language'
+            },
+            questioninput: {
+                placeholder: 'What would you like to ask?'
+            },
             analysistab: {
-            sentiment: {
-                positive: 'Positive',
-                neutral: 'Neutral',
-                negative: 'Negative'
+                analysisTitle: 'AI Analysis',
+                subtitle: 'Comprehensive response analysis',
+                startAnalysis: 'Start Analysis',
+                analyzing: 'Analyzing...',
+                analysisComplete: 'Analysis Complete'
             },
             responsecard: {
                 waiting: 'Waiting...',
@@ -134,24 +155,10 @@ const resources = {
                 failedToGetResponse: 'Failed to get response',
                 completedIn: 'Completed in {{seconds}}s'
             },
-                analysisTitle: 'AI Analysis',
-                subtitle: 'Comprehensive response analysis',
-                startAnalysis: 'Start Analysis',
-                analyzing: 'Analyzing...',
-                analysisComplete: 'Analysis Complete'
-            },
-                home: 'Home',
-                settings: 'Settings',
-                changeLanguage: 'Change language'
-            },
-                placeholder: 'What would you like to ask?'
-            },
-                clearAll: 'Clear all',
-                inputPlaceholder: 'Type to search tags...',
-                ariaRemove: 'Remove {{name}}',
-                noTagsFound: 'No tags found',
-                createTag: 'Create "{{name}}" tag',
-                noMatchingFound: 'No tags found matching "{{value}}"'
+            sentiment: {
+                positive: 'Positive',
+                neutral: 'Neutral',
+                negative: 'Negative'
             }
         }
     },
