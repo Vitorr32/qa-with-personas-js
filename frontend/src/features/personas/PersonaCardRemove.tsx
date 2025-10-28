@@ -1,7 +1,6 @@
 import { Check } from "lucide-react";
 import { getPersonaAvatar } from "../../utils/Avatar";
 import { Persona } from "../../utils/Persona";
-import { Tag } from "../../utils/Tag";
 import TagChipList from "../utils/TagChipList";
 
 interface PersonaCardRemoveProps {

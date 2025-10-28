@@ -1,0 +1,28 @@
+# Production multi-stage build for NestJS backend
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Install all deps (including dev) for build
+COPY package*.json ./
+RUN npm ci
+
+# Copy source and build
+COPY . .
+RUN npm run build
+
+# ---- Runtime image ----
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Install only production deps
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# Copy built files
+COPY --from=builder /app/dist ./dist
+# Optional: copy uploads dir if you want existing assets included in image
+# COPY --from=builder /app/uploads ./uploads
+
+EXPOSE 5000
+CMD ["node", "dist/main.js"]
