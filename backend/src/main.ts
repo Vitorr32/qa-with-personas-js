@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
+import { DataSource } from 'typeorm';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,6 +22,20 @@ async function bootstrap() {
   // Increase body size limits to handle large amounts of text data
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+  // Optionally auto-sync database schema on boot (use for first-time deployments only)
+  if (process.env.DB_SYNC_ON_BOOT === 'true') {
+    try {
+      const dataSource = app.get(DataSource);
+      if (!dataSource.isInitialized) {
+        await dataSource.initialize();
+      }
+      await dataSource.synchronize();
+    } catch (err) {
+      // If sync fails, fall back to normal startup
+      console.error('DB schema sync on boot failed:', err);
+    }
+  }
 
   await app.listen(process.env.PORT ?? 3000);
 }
