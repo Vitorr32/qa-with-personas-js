@@ -1,0 +1,3 @@
+# Dot env files
+.env
+.env.prod
