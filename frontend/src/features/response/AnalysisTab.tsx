@@ -1,4 +1,4 @@
-import { AlertCircle, BarChart3, Brain, CheckCircle2, Hash, Loader2, MessageSquare, PieChart } from "lucide-react";
+import { AlertCircle, BarChart3, Brain, CheckCircle2, Hash, Loader2, MessageSquare, PieChart, Download } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
@@ -36,8 +36,30 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
             setAnalysisData(generateCompleteAnalysis(analysisRaw.data?.analysis || "", responses));
             setAnalysisStatus('completed');
         } catch (err) {
-            extractMessageFromErrorAndToast(err, "Analysis failed");
+            extractMessageFromErrorAndToast(err, t('analysistab.analysisFailed'));
         }
+    }
+
+    function downloadAnalysisJSON() {
+        if (!analysisData) return;
+        const payload = {
+            generatedAt: new Date().toISOString(),
+            question,
+            fileIds,
+            responses,
+            analysis: analysisData,
+        };
+        const json = JSON.stringify(payload, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        a.download = `analysis-${timestamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
     }
 
     return (
@@ -73,35 +95,23 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                     )}
 
                     {analysisStatus === "completed" && (
-                        <div className="flex items-center gap-2 text-green-600">
-                            <CheckCircle2 className="w-5 h-5" />
-                            <span className="font-medium">{t('analysistab.analysisComplete')}</span>
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 text-green-600">
+                                <CheckCircle2 className="w-5 h-5" />
+                                <span className="font-medium">{t('analysistab.analysisComplete')}</span>
+                            </div>
+                            <button
+                                onClick={downloadAnalysisJSON}
+                                className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                                disabled={!analysisData}
+                                title={t('analysistab.downloadJsonTitle')}
+                            >
+                                <Download className="w-4 h-4" />
+                                <span className="text-sm">{t('analysistab.downloadJson')}</span>
+                            </button>
                         </div>
                     )}
                 </div>
-
-                {/* Summary */}
-                {/* {analysisStatus === "completed" && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-100"
-                    >
-                        <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                            <TrendingUp className="w-4 h-4" />
-                            Executive Summary
-                        </h3>
-                        <p className="text-gray-700 leading-relaxed">
-                            {analysis.status === 'analyzing' && (
-                                <motion.span
-                                    animate={{ opacity: [1, 0] }}
-                                    transition={{ duration: 0.8, repeat: Infinity }}
-                                    className="inline-block w-2 h-4 bg-purple-500 ml-1"
-                                />
-                            )}
-                        </p>
-                    </motion.div>
-                )} */}
             </div>
 
             {/* Key Insights */}

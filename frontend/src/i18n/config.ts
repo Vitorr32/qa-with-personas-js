@@ -143,7 +143,10 @@ const resources = {
                 subtitle: 'Comprehensive response analysis',
                 startAnalysis: 'Start Analysis',
                 analyzing: 'Analyzing...',
-                analysisComplete: 'Analysis Complete'
+                analysisComplete: 'Analysis Complete',
+                analysisFailed: 'Analysis failed',
+                downloadJsonTitle: 'Download Analysis as JSON',
+                downloadJson: 'Download JSON'
             },
             responsecard: {
                 waiting: 'Waiting...',
@@ -175,6 +178,11 @@ const resources = {
                 askAll: 'Preguntar a Todas las Personas',
                 filter: 'Filtrar Personas',
                 closeFilter: 'Cerrar Filtros'
+            },
+            analysistab: {
+                analysisFailed: 'Error en el análisis',
+                downloadJsonTitle: 'Descargar análisis en JSON',
+                downloadJson: 'Descargar JSON'
             }
             // TODO: Add translations for new keys in Spanish
         }
@@ -192,6 +200,11 @@ const resources = {
                 askAll: 'すべてのペルソナに質問',
                 filter: 'ペルソナをフィルター',
                 closeFilter: 'フィルターを閉じる'
+            },
+            analysistab: {
+                analysisFailed: '分析に失敗しました',
+                downloadJsonTitle: '分析をJSONとしてダウンロード',
+                downloadJson: 'JSONをダウンロード'
             }
             // TODO: Add translations for new keys in Japanese
         }

@@ -16,7 +16,7 @@ export default function SentimentChart({ sentimentDistribution }: SentimentChart
                 { label: t('sentiment.neutral'), value: sentimentDistribution.neutral, color: 'bg-gray-500', lightColor: 'bg-gray-100' },
                 { label: t('sentiment.negative'), value: sentimentDistribution.negative, color: 'bg-red-500', lightColor: 'bg-red-100' }
             ].map(({ label, value, color, lightColor }) => {
-                const percentage = (value / total) * 100;
+                const percentage = ((value / total) * 100).toFixed(1);
 
                 return (
                     <div key={label}>
