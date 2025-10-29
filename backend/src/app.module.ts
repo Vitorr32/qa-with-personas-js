@@ -14,6 +14,8 @@ import { Prompts } from './prompt/prompt.entity';
 import { OpenAIController } from './openai/openai.controller';
 import { OpenAIService } from './openai/openai.service';
 import { ConfigModule } from '@nestjs/config';
+import { DatasetImportController } from './import/dataset.controller.js';
+import { DatasetImportService } from './import/dataset.service.js';
 
 @Module({
   imports: [
@@ -34,7 +36,7 @@ import { ConfigModule } from '@nestjs/config';
     }),
     ConfigModule.forRoot(),
   ],
-  controllers: [PersonasController, TagsController, PromptsController, OpenAIController],
-  providers: [PersonasService, TagsService, PromptsService, OpenAIService],
+  controllers: [PersonasController, TagsController, PromptsController, OpenAIController, DatasetImportController],
+  providers: [PersonasService, TagsService, PromptsService, OpenAIService, DatasetImportService],
 })
 export class AppModule { }

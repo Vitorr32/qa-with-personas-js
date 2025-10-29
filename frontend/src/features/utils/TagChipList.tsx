@@ -3,12 +3,13 @@ import { Tag } from "../../utils/Tag";
 interface TagChipListProps {
     tags: Tag[];
     theme?: 'light' | 'dark';
+    full?: boolean
 }
 
 
-export default function TagChipList({ tags, theme = 'light' }: TagChipListProps) {
-    const displayTags = tags.slice(0, 3);
-    const hasMoreTags = tags.length > 3;
+export default function TagChipList({ tags, theme = 'light', full = false }: TagChipListProps) {
+    const displayTags = full ? tags : tags.slice(0, 3);
+    const hasMoreTags = !full && tags.length > 3;
 
     return (
         <div className="flex flex-wrap gap-1">

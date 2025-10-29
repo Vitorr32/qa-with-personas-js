@@ -145,7 +145,7 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                                         <Tag className="w-5 h-5 text-blue-600" />
                                         {t('personacard.tagsLabel', { count: persona.tags.length })}
                                     </h3>
-                                    <TagChipList tags={persona.tags} />
+                                    <TagChipList tags={persona.tags} full/>
                                 </div>
 
                                 {/* Metadata */}
