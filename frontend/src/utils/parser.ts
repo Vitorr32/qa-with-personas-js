@@ -64,10 +64,16 @@ export function generateWordFrequency(
         minWordLength?: number;
         maxWords?: number;
         stopWords?: string[];
+        /**
+         * Optional locale(s) hint for tokenization. Examples: 'en', 'ja', 'zh', 'ko', 'th'.
+         * If omitted, a best-effort locale will be inferred from the text.
+         */
+        locale?: string | string[];
     } = {}
 ): Word[] {
     const {
-        minWordLength = 4,
+        // Do not assign a default here; we dynamically choose a sensible default for CJK.
+        minWordLength: providedMinWordLength,
         maxWords = 100,
         stopWords = [
             'this', 'that', 'with', 'from', 'have', 'will', 'would', 'could', 'should',
@@ -76,22 +82,63 @@ export function generateWordFrequency(
             'after', 'above', 'below', 'between', 'under', 'again', 'further', 'other',
             'some', 'more', 'most', 'been', 'being', 'were', 'does', 'just', 'very',
             'also', 'here', 'only', 'over', 'know', 'because', 'same', 'make', 'made'
-        ]
+        ],
+        locale
     } = options;
 
     // Combine all responses into one text
     const allText = Object.values(personaResponses).join(' ');
 
-    // Tokenize and clean
-    const words = allText
-        .toLowerCase()
-        .replace(/[^\w\s]/g, ' ') // Remove punctuation
-        .split(/\s+/)
-        .filter(word =>
-            word.length >= minWordLength &&
-            !stopWords.includes(word) &&
-            isNaN(Number(word)) // Exclude numbers
-        );
+    // Detect scripts that typically don't use spaces (CJK, Thai, etc.)
+    const hasHan = /\p{Script=Han}/u.test(allText);
+    const hasHiragana = /\p{Script=Hiragana}/u.test(allText);
+    const hasKatakana = /\p{Script=Katakana}/u.test(allText);
+    const hasHangul = /\p{Script=Hangul}/u.test(allText);
+    const hasThai = /\p{Script=Thai}/u.test(allText);
+
+    // Decide locale for segmentation
+    let localeHint: string | string[] | undefined = locale;
+    if (!localeHint) {
+        if (hasHiragana || hasKatakana) localeHint = 'ja';
+        else if (hasHan && !hasHiragana && !hasKatakana) localeHint = 'zh';
+        else if (hasHangul) localeHint = 'ko';
+        else if (hasThai) localeHint = 'th';
+        else localeHint = 'en';
+    }
+
+    // Choose a sensible default min length depending on script
+    const minWordLength = providedMinWordLength ?? ((hasHan || hasHiragana || hasKatakana || hasHangul || hasThai) ? 1 : 4);
+
+    // Tokenize using Intl.Segmenter when available (Unicode-aware), otherwise fallback to a Unicode regex.
+    let words: string[] = [];
+    const SegmenterCtor = (Intl as any)?.Segmenter as (new(locales?: string | string[], options?: any) => any) | undefined;
+    if (SegmenterCtor) {
+        try {
+            const segmenter = new SegmenterCtor(localeHint, { granularity: 'word' });
+            const segments = segmenter.segment(allText);
+            for (const item of segments) {
+                const seg = (item.segment as string).trim().toLowerCase();
+                if (!seg) continue;
+                const isWordLike = (item as any).isWordLike ?? /[\p{L}\p{N}]/u.test(seg);
+                if (!isWordLike) continue;
+                words.push(seg);
+            }
+        } catch {
+            // Fallback if Segmenter throws for an unsupported locale
+        }
+    }
+    if (words.length === 0) {
+        // Regex fallback: extract sequences of letters/numbers (Unicode-aware)
+        // This will group continuous CJK characters as tokens, which is acceptable for a word-cloud fallback.
+        words = (allText.toLowerCase().match(/[\p{L}\p{N}_'’\-]+/gu) || []);
+    }
+
+    // Final cleaning and filtering
+    words = words.filter(word =>
+        word.length >= minWordLength &&
+        !stopWords.includes(word) &&
+        isNaN(Number(word)) // Exclude numbers
+    );
 
     // Count word frequencies
     const wordCount = new Map<string, number>();
