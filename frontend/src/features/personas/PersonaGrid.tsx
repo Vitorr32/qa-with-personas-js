@@ -43,7 +43,7 @@ export default function PersonaGrid({
             items.every(p => selectedPersonas.find(q => p.id === q.id));
     }, [items, selectedPersonas]);
 
-    const { data: personasPage, isLoading: loadingPersonas } = useGetPersonasQuery(queryArgs);
+    const { data: personasPage, isLoading: loadingPersonas, isFetching } = useGetPersonasQuery(queryArgs);
 
     useEffect(() => {
         if (!personasPage) return;
@@ -103,7 +103,7 @@ export default function PersonaGrid({
                 )}
             </div>
 
-            <LoadingContainer isLoading={loadingPersonas}>
+            <LoadingContainer isLoading={loadingPersonas || isFetching}>
                 {items.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {items.map((persona, index) => (

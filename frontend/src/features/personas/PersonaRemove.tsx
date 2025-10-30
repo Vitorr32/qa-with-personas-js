@@ -31,7 +31,7 @@ export default function RemovePersonasSection() {
         refreshKey,
     }), [pageSize, cursor, searchQuery, selectedTags, refreshKey]);
 
-    const { data: personasPage, isLoading: isLoadingPersonas, refetch } = useGetPersonasQuery(queryArgs);
+    const { data: personasPage, isLoading: isLoadingPersonas, isFetching, refetch } = useGetPersonasQuery(queryArgs);
     const [deletePersona] = useDeletePersonaMutation();
 
     async function handleDelete(personas: Persona[]) {
@@ -110,7 +110,7 @@ export default function RemovePersonasSection() {
 
             <SearchBox setSearchQuery={setSearchQuery} setSelectedTags={setSelectedTags} searchQuery={searchQuery} selectedTags={selectedTags} injectWrapperClassNames="bg-white rounded-xl p-6 border border-gray-200 shadow-lg" />
 
-            <LoadingContainer isLoading={isLoadingPersonas}>
+            <LoadingContainer isLoading={isLoadingPersonas || isFetching}>
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">
                         {t('remove.foundCount', { count: items.length })}
@@ -151,7 +151,7 @@ export default function RemovePersonasSection() {
                     </div>
                 )}
 
-                {items.length === 0 && !isLoadingPersonas && (
+                {items.length === 0 && !(isLoadingPersonas || isFetching) && (
                     <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
                         <div className="text-4xl mb-2">🔍</div>
                         <p className="text-gray-600">{t('remove.noFound')}</p>

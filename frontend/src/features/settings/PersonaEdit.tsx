@@ -1,13 +1,13 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
 import { Persona } from '../../utils/Persona';
-import { LoaderPinwheel } from 'lucide-react';
 import PersonaCardEdit from '../personas/PersonaCardEdit';
 import EditPersonaModal from '../personas/PersonaEditModal';
 import { useGetPersonasQuery, useUpdatePersonaMutation } from '../../store/apiSlice';
 import { Tag } from '../../utils/Tag';
 import { errorToast, successToast } from '../../utils/Toasts';
 import SearchBox from '../utils/SearchBox';
+import LoadingContainer from '../utils/LoadingContainer';
 
 export default function PersonaEdit() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -26,7 +26,7 @@ export default function PersonaEdit() {
         refreshKey,
     }), [pageSize, cursor, searchQuery, selectedTags, refreshKey]);
 
-    const { data: personasPage, isLoading: loadingPersonas } = useGetPersonasQuery(queryArgs);
+    const { data: personasPage, isLoading: loadingPersonas, isFetching } = useGetPersonasQuery(queryArgs);
     const [updatePersona] = useUpdatePersonaMutation();
     const [editingPersona, setEditingPersona] = useState<Persona | null>(null);
 
@@ -71,21 +71,7 @@ export default function PersonaEdit() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
         >
-            {loadingPersonas && (
-                <AnimatePresence>
-
-                    <motion.div
-                        initial={{ opacity: 1 }}
-                        animate={{ rotate: 360, transition: { repeat: Infinity, duration: 1, ease: "linear" } }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-white"
-                    >
-                        <LoaderPinwheel />
-                    </motion.div>
-                </AnimatePresence>
-            )}
-            {!loadingPersonas && (
+            <LoadingContainer isLoading={loadingPersonas || isFetching}>
                 <>
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800 mb-2">Edit Personas</h2>
@@ -105,7 +91,7 @@ export default function PersonaEdit() {
                         ))}
                     </div>
 
-                    {items.length === 0 && !loadingPersonas && (
+                    {items.length === 0 && !(loadingPersonas || isFetching) && (
                         <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
                             <div className="text-4xl mb-2">🔍</div>
                             <p className="text-gray-600">No personas found</p>
@@ -131,7 +117,7 @@ export default function PersonaEdit() {
                         </div>
                     )}
                 </>
-            )}
+            </LoadingContainer>
 
             {editingPersona && (
                 <EditPersonaModal
