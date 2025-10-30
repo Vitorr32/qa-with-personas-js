@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Check, LoaderPinwheel, Save } from "lucide-react";
 import { useGetPromptsQuery, useUpdatePromptsMutation } from "../../store/apiSlice";
 import { extractMessageFromErrorAndToast, successToast } from "../../utils/Toasts";
+import LoadingContainer from "../utils/LoadingContainer";
 
 export default function PromptsEditor() {
     const { t } = useTranslation();
@@ -42,21 +43,7 @@ export default function PromptsEditor() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
         >
-            {isLoading && (
-                <AnimatePresence>
-
-                    <motion.div
-                        initial={{ opacity: 1 }}
-                        animate={{ rotate: 360, transition: { repeat: Infinity, duration: 1, ease: "linear" } }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-white"
-                    >
-                        <LoaderPinwheel />
-                    </motion.div>
-                </AnimatePresence>
-            )}
-            {!isLoading && (
+            <LoadingContainer isLoading={isLoading}>
                 <>
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('prompts.title')}</h2>
@@ -103,8 +90,7 @@ export default function PromptsEditor() {
                         {saved ? t('prompts.saved') : (isSaving ? t('prompts.saving') : t('prompts.saveButton'))}
                     </button>
                 </>
-            )}
-
+            </LoadingContainer>
         </motion.div>
     );
 }

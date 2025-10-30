@@ -22,6 +22,7 @@ export default function RemovePersonasSection() {
     const [items, setItems] = useState<Persona[]>([]);
     const [hasMore, setHasMore] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [totalCount, setTotalCount] = useState<number>(0);
 
     const queryArgs = useMemo(() => ({
         pageSize,
@@ -79,6 +80,9 @@ export default function RemovePersonasSection() {
         // personasPage might be the legacy array or the new paged shape
         const newItems: Persona[] = Array.isArray(personasPage) ? (personasPage as unknown as Persona[]) : (personasPage as any).items || [];
         const newHasMore = Array.isArray(personasPage) ? false : Boolean((personasPage as any).hasMore);
+        const newTotalCount = Array.isArray(personasPage)
+            ? newItems.length
+            : ((personasPage as any).totalCount ?? newItems.length);
 
         // if cursor is undefined, it's the first page -> replace
         if (!cursor) {
@@ -87,6 +91,7 @@ export default function RemovePersonasSection() {
             setItems((prev) => [...prev, ...newItems]);
         }
         setHasMore(newHasMore);
+        setTotalCount(newTotalCount);
     }, [personasPage]);
 
     // reset pagination when filters change
@@ -113,7 +118,7 @@ export default function RemovePersonasSection() {
             <LoadingContainer isLoading={isLoadingPersonas || isFetching}>
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">
-                        {t('remove.foundCount', { count: items.length })}
+                        {t('remove.foundCount', { count: totalCount })}
                     </h3>
 
                     <button

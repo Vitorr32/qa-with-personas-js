@@ -1,28 +1,35 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
   db:
     image: postgres:15-alpine
     container_name: my-app-db
+    restart: always
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: "123"
       POSTGRES_DB: qa_with_personas
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U myuser -d qa_with_personas" ]
+      # Check against the actual app database to avoid "database 'myuser' does not exist" noise
+      test: ["CMD-SHELL", "pg_isready -U myuser -d qa_with_personas"]
       interval: 10s
       timeout: 5s
       retries: 5
+    # Optional: expose locally for admin tools
+    ports:
+      - "5432:5432"
 
-  # Backend API
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
     container_name: my-app-backend
+    restart: always
+    # Load sensitive env values from a local file (not committed)
+    env_file:
+      - ./.env
     environment:
       NODE_ENV: development
       DB_USERNAME: myuser
@@ -30,36 +37,32 @@ services:
       DB_NAME: qa_with_personas
       DB_PASSWORD: "123"
       DB_PORT: 5432
+      DB_SYNC_ON_BOOT: "true"
+      OPENAI_MODEL: "gpt-4"
+      OPENAI_ANALYSIS_MODEL: "gpt-4"
+      OPENAI_FILE_TTL_SECONDS: "3600"
+      FRONTEND_PORT: 80
       PORT: 5000
-      FRONTEND_URL: http://localhost:5173
-      FRONTEND_PORT: 5173
-      CHOKIDAR_USEPOLLING: "true"
-    ports:
-      - "5000:5000"
+      # Not strictly required when front proxies, but harmless
+      FRONTEND_URL: http://localhost
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    command: npm run start:dev
+    expose:
+      - "5000"
 
-  # Frontend React App
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
     container_name: my-app-frontend
+    restart: always
     environment:
       - VITE_API_BASE_URL=http://localhost:5000
-    ports:
-      - "5173:5173"
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    stdin_open: true
-    tty: true
-    command: npm run dev -- --host 0.0.0.0 --port 5173
+    ports:
+      - "80:80"
 
 volumes:
   postgres_data:
