@@ -20,6 +20,13 @@ interface CSVPersonaRow {
   region: string;
   prefecture: string;
   country: string;
+  // Optional extended columns present in the sample
+  professional_persona?: string;
+  sports_persona?: string;
+  arts_persona?: string;
+  travel_persona?: string;
+  culinary_persona?: string;
+  area?: string; // 東日本/西日本
 }
 
 export class CsvPersonaV1Parser implements DatasetParser {
@@ -171,12 +178,60 @@ export class CsvPersonaV1Parser implements DatasetParser {
   }
 
   private generateDescription(row: CSVPersonaRow): string {
-    const parts = [
-      row.persona ?? '',
-      `\n\n【文化背景】\n${row.cultural_background ?? ''}`,
-      `\n\n【キャリア目標】\n${row.career_goals_and_ambitions ?? ''}`,
-    ];
-    return parts.join('');
+    const sections: string[] = [];
+
+    // Primary persona narrative
+    if (row.persona) sections.push(this.section('人物像', row.persona));
+
+    // Extended facets if provided
+    if (row.professional_persona) sections.push(this.section('仕事・専門の側面', row.professional_persona));
+    if (row.sports_persona) sections.push(this.section('スポーツ/身体活動', row.sports_persona));
+    if (row.arts_persona) sections.push(this.section('芸術/創作の側面', row.arts_persona));
+    if (row.travel_persona) sections.push(this.section('旅行スタイル', row.travel_persona));
+    if (row.culinary_persona) sections.push(this.section('料理・食文化', row.culinary_persona));
+
+    // Cultural background
+    if (row.cultural_background) sections.push(this.section('文化背景', row.cultural_background));
+
+    // Basic profile
+    const profileLines: string[] = [];
+    if (row.sex) profileLines.push(`性別: ${row.sex}`);
+    if (row.age) profileLines.push(`年齢: ${row.age}`);
+    if (row.marital_status) profileLines.push(`婚姻: ${row.marital_status}`);
+    if (row.education_level) profileLines.push(`学歴: ${row.education_level}`);
+    if (row.occupation) profileLines.push(`職業: ${row.occupation}`);
+    const loc = [row.country, row.region, row.area, row.prefecture].filter(Boolean).join(' / ');
+    if (loc) profileLines.push(`地域: ${loc}`);
+    if (profileLines.length) sections.push(this.section('基本情報', profileLines.join('\n')));
+
+    // Skills
+    const skills = this.parseListField(row.skills_and_expertise_list);
+    if (skills.length) sections.push(this.bulletSection('スキル・専門性', skills));
+
+    // Hobbies
+    const hobbies = this.parseListField(row.hobbies_and_interests_list);
+    if (hobbies.length) sections.push(this.bulletSection('趣味・関心', hobbies));
+
+    // Goals
+    if (row.career_goals_and_ambitions) sections.push(this.section('キャリア目標', row.career_goals_and_ambitions));
+
+    return sections.filter(Boolean).join('\n\n');
+  }
+
+  private section(title: string, content: string): string {
+    const body = (content || '').toString().trim();
+    if (!body) return '';
+    return `【${title}】\n${body}`;
+  }
+
+  private bulletSection(title: string, items: string[]): string {
+    const list = items
+      .map((s) => (s || '').toString().trim())
+      .filter((s) => s.length > 0)
+      .map((s) => `・${s}`)
+      .join('\n');
+    if (!list) return '';
+    return `【${title}】\n${list}`;
   }
 
   private async extractTags(row: CSVPersonaRow, ctx: ImportContext, tagCache: Map<string, Tag>): Promise<Tag[]> {
