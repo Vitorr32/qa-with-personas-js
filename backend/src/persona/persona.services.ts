@@ -94,17 +94,21 @@ export class PersonasService {
             countQb.andWhere(whereExpr, { q });
         }
 
-        // Tag filter (match any of the provided tag ids) but still load ALL tags for the persona.
-        // Use EXISTS against the join table so the selected relation isn't restricted to only matched tags.
+        // Tag filter: require persona to have ALL selected tags (AND semantics),
+        // while still loading ALL tags in the relation for display.
+        // Implemented by counting distinct matched tags in the join table and
+        // comparing to the number of requested tags.
         if (tagIds && tagIds.length > 0) {
-            qb.andWhere(
-                'EXISTS (SELECT 1 FROM persona_tags pt WHERE pt.persona_id = persona.id AND pt.tag_id IN (:...tagIds))',
-                { tagIds },
-            );
-            countQb.andWhere(
-                'EXISTS (SELECT 1 FROM persona_tags pt WHERE pt.persona_id = persona.id AND pt.tag_id IN (:...tagIds))',
-                { tagIds },
-            );
+            const andExpr = `(
+                SELECT COUNT(DISTINCT pt.tag_id)
+                FROM persona_tags pt
+                WHERE pt.persona_id = persona.id
+                  AND pt.tag_id IN (:...tagIds)
+            ) = :tagCount`;
+
+            const params = { tagIds, tagCount: tagIds.length };
+            qb.andWhere(andExpr, params);
+            countQb.andWhere(andExpr, params);
         }
 
         // Ordering: newest first. Use createdAt + id for a stable cursor.

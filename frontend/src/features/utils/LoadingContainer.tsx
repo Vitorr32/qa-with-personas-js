@@ -12,7 +12,9 @@ export default function LoadingContainer({ isLoading, children }: LoadingContain
                     <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8"></div>
                 </div>
             )}
-            <div className={isLoading ? 'opacity-50 pointer-events-none' : ''}>{children}</div>
+            {!isLoading && (
+                <div className={isLoading ? 'opacity-50 pointer-events-none' : ''}>{children}</div>
+            )}
         </div>
     );
 }
