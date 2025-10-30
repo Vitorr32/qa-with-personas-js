@@ -141,7 +141,10 @@ export class OpenAIController {
       messages: [
         { role: 'system', content: prompts.analystPrompt },
         ...messageList
-      ]
+      ],
+      // Ensure we request enough space for the full analysis
+      max_tokens: Number(process.env.OPENAI_ANALYSIS_MAX_TOKENS || 2000),
+      temperature: 0.3,
     };
 
     try {

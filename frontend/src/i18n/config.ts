@@ -185,12 +185,157 @@ const resources = {
                 filter: 'Filtrar Personas',
                 closeFilter: 'Cerrar Filtros'
             },
+            mainpage: {
+                selectedPersonaCount_one: 'Obtén respuestas de {{count}} persona seleccionada',
+                selectedPersonaCount_other: 'Obtén respuestas de {{count}} personas seleccionadas',
+                defaultPersonaText: 'Obtén respuestas de miles de personas especializadas',
+                askPersona_one: 'Preguntar a {{count}} Persona',
+                askPersona_other: 'Preguntar a {{count}} Personas',
+                askAllPersonas: 'Preguntar a Todas las Personas',
+                selectPersonas: 'Seleccionar Personas',
+                editSelection: 'Editar Selección',
+                selectedPersonas: 'Personas Seleccionadas:',
+                selectedBadge: '{{count}} seleccionadas',
+                done: 'Listo'
+            },
+            response: {
+                personaResponses: 'Respuestas de Personas',
+                askingPersonasAbout_one: 'Preguntando a {{count}} persona sobre: "{{question}}"',
+                askingPersonasAbout_other: 'Preguntando a {{count}} personas sobre: "{{question}}"',
+                responsesTab: 'Respuestas',
+                analysisTab: 'Análisis',
+                completedCounter: '{{completed}} / {{total}} completadas',
+                allReceived: 'Todas las respuestas recibidas',
+                preparingPersonas: 'Preparando personas y subiendo archivos...'
+            },
+            personagrid: {
+                foundCount_one: '{{count}} Persona Encontrada',
+                foundCount_other: '{{count}} Personas Encontradas',
+                allSelected: 'Todas Seleccionadas',
+                addAll: 'Agregar Todo a la Lista',
+                noFound: 'No se encontraron personas',
+                tryAdjustSearch: 'Intenta ajustar tu búsqueda o filtros',
+                loadMore: 'Cargar Más'
+            },
+            remove: {
+                title: 'Eliminar Personas',
+                subtitle: 'Selecciona y elimina personas',
+                foundCount_one: '{{count}} Persona Encontrada',
+                foundCount_other: '{{count}} Personas Encontradas',
+                noSelected: 'Ninguna Persona Seleccionada',
+                removeCount_one: 'Eliminar {{count}} Persona',
+                removeCount_other: 'Eliminar {{count}} Personas',
+                noFound: 'No se encontraron personas',
+                confirmTitle: 'Confirmar Eliminación',
+                confirmText_one: 'Estás a punto de eliminar permanentemente {{count}} persona. Esta acción no se puede deshacer.',
+                confirmText_other: 'Estás a punto de eliminar permanentemente {{count}} personas. Esta acción no se puede deshacer.',
+                toBeRemovedLabel: 'Personas a eliminar:',
+                andMore: '... y {{count}} más',
+                confirmButton: 'Sí, Eliminar'
+            },
+            common: {
+                done: 'Listo',
+                cancel: 'Cancelar'
+            },
+            personaadd: {
+                title: 'Agregar Nueva Persona',
+                subtitle: 'Crea una nueva persona con atributos personalizados',
+                avatarLabel: 'Avatar (Opcional)',
+                chooseImage: 'Elegir Imagen',
+                nameLabel: 'Nombre *',
+                namePlaceholder: 'p. ej., Experto en Código',
+                greetingLabel: 'Saludo *',
+                greetingPlaceholder: 'p. ej., ¡Hola! Estoy aquí para ayudarte a programar.',
+                descriptionLabel: 'Descripción *',
+                descriptionPlaceholder: 'Describe la experiencia y capacidades de la persona...',
+                tagsLabel: 'Etiquetas',
+                createButton: 'Crear Persona'
+            },
+            prompts: {
+                title: 'Indicaciones del Sistema',
+                subtitle: 'Configura las indicaciones predeterminadas del sistema',
+                mainLabel: 'Prompt Principal',
+                mainHelp: 'Usado para consultas generales',
+                mainPlaceholder: 'Ingresa el prompt principal del sistema...',
+                analystLabel: 'Prompt de Analista',
+                analystHelp: 'Usado para analizar respuestas',
+                analystPlaceholder: 'Ingresa el prompt del analista...',
+                charCount: '{{count}} caracteres',
+                saveButton: 'Guardar Prompts',
+                saving: 'Guardando...',
+                saved: '¡Guardado!'
+            },
+            personaeditmodal: {
+                title: 'Editar Persona',
+                nameLabel: 'Nombre',
+                greetingLabel: 'Saludo',
+                descriptionLabel: 'Descripción',
+                tagsLabel: 'Etiquetas',
+                addTagPlaceholder: 'Agregar etiqueta...',
+                addButton: 'Agregar',
+                saveChangesButton: 'Guardar Cambios'
+            },
+            personaedit: {
+                title: 'Editar Personas',
+                subtitle: 'Buscar y modificar personas existentes',
+                updatedSuccess: '¡La persona {{name}} se actualizó correctamente!',
+                updateFailed: 'Error al actualizar la persona: {{message}}'
+            },
+            personachip: {
+                ariaRemove: 'Eliminar {{name}}'
+            },
+            personacard: {
+                ariaViewDetails: 'Ver detalles',
+                description: 'Descripción',
+                tagsLabel: 'Etiquetas ({{count}})',
+                metadata: 'Metadatos',
+                id: 'ID',
+                totalTags: 'Etiquetas Totales',
+                close: 'Cerrar',
+                addToSelection: 'Agregar a la Selección',
+                removeFromSelection: 'Quitar de la Selección'
+            },
+            tagpicker: {
+                clearAll: 'Borrar todo',
+                inputPlaceholder: 'Escribe para buscar etiquetas...',
+                ariaRemove: 'Eliminar {{name}}',
+                noTagsFound: 'No se encontraron etiquetas',
+                createTag: 'Crear etiqueta "{{name}}"',
+                noMatchingFound: 'No se encontraron etiquetas que coincidan con "{{value}}"'
+            },
+            header: {
+                home: 'Inicio',
+                settings: 'Configuración',
+                changeLanguage: 'Cambiar idioma'
+            },
+            questioninput: {
+                placeholder: '¿Qué te gustaría preguntar?'
+            },
             analysistab: {
+                analysisTitle: 'Análisis de IA',
+                subtitle: 'Análisis integral de respuestas',
+                startAnalysis: 'Iniciar Análisis',
+                analyzing: 'Analizando...',
+                analysisComplete: 'Análisis Completo',
                 analysisFailed: 'Error en el análisis',
                 downloadJsonTitle: 'Descargar análisis en JSON',
                 downloadJson: 'Descargar JSON'
+            },
+            responsecard: {
+                waiting: 'Esperando...',
+                responding: 'Respondiendo...',
+                completed: 'Completado',
+                error: 'Error',
+                idle: 'Inactivo',
+                waitingInQueue: 'Esperando en la cola...',
+                failedToGetResponse: 'No se pudo obtener la respuesta',
+                completedIn: 'Completado en {{seconds}} s'
+            },
+            sentiment: {
+                positive: 'Positivo',
+                neutral: 'Neutral',
+                negative: 'Negativo'
             }
-            // TODO: Add translations for new keys in Spanish
         }
     },
     ja: {
@@ -207,12 +352,157 @@ const resources = {
                 filter: 'ペルソナをフィルター',
                 closeFilter: 'フィルターを閉じる'
             },
+            mainpage: {
+                selectedPersonaCount_one: '選択した{{count}}件のペルソナから回答を得る',
+                selectedPersonaCount_other: '選択した{{count}}件のペルソナから回答を得る',
+                defaultPersonaText: '何千もの専門ペルソナから回答を得る',
+                askPersona_one: '{{count}}件のペルソナに質問',
+                askPersona_other: '{{count}}件のペルソナに質問',
+                askAllPersonas: 'すべてのペルソナに質問',
+                selectPersonas: 'ペルソナを選択',
+                editSelection: '選択を編集',
+                selectedPersonas: '選択したペルソナ:',
+                selectedBadge: '{{count}} 件選択',
+                done: '完了'
+            },
+            response: {
+                personaResponses: 'ペルソナの回答',
+                askingPersonasAbout_one: '{{count}}件のペルソナに質問中: "{{question}}"',
+                askingPersonasAbout_other: '{{count}}件のペルソナに質問中: "{{question}}"',
+                responsesTab: '回答',
+                analysisTab: '分析',
+                completedCounter: '{{total}} 中 {{completed}} 完了',
+                allReceived: 'すべての回答を受信しました',
+                preparingPersonas: 'ペルソナを準備し、ファイルをアップロードしています...'
+            },
+            personagrid: {
+                foundCount_one: '{{count}} 件のペルソナが見つかりました',
+                foundCount_other: '{{count}} 件のペルソナが見つかりました',
+                allSelected: 'すべて選択済み',
+                addAll: 'すべてをリストに追加',
+                noFound: 'ペルソナが見つかりません',
+                tryAdjustSearch: '検索条件やフィルターを調整してください',
+                loadMore: 'さらに読み込む'
+            },
+            remove: {
+                title: 'ペルソナを削除',
+                subtitle: 'ペルソナを選択して削除',
+                foundCount_one: '{{count}} 件のペルソナが見つかりました',
+                foundCount_other: '{{count}} 件のペルソナが見つかりました',
+                noSelected: 'ペルソナが選択されていません',
+                removeCount_one: '{{count}} 件のペルソナを削除',
+                removeCount_other: '{{count}} 件のペルソナを削除',
+                noFound: 'ペルソナが見つかりません',
+                confirmTitle: '削除の確認',
+                confirmText_one: '{{count}} 件のペルソナを完全に削除しようとしています。この操作は元に戻せません。',
+                confirmText_other: '{{count}} 件のペルソナを完全に削除しようとしています。この操作は元に戻せません。',
+                toBeRemovedLabel: '削除するペルソナ:',
+                andMore: '... ほか {{count}} 件',
+                confirmButton: 'はい、削除します'
+            },
+            common: {
+                done: '完了',
+                cancel: 'キャンセル'
+            },
+            personaadd: {
+                title: '新しいペルソナを追加',
+                subtitle: 'カスタム属性で新しいペルソナを作成',
+                avatarLabel: 'アバター（任意）',
+                chooseImage: '画像を選択',
+                nameLabel: '名前 *',
+                namePlaceholder: '例: コードのエキスパート',
+                greetingLabel: '挨拶 *',
+                greetingPlaceholder: '例: こんにちは！ コーディングをお手伝いします。',
+                descriptionLabel: '説明 *',
+                descriptionPlaceholder: 'ペルソナの専門性と能力を説明してください...',
+                tagsLabel: 'タグ',
+                createButton: 'ペルソナを作成'
+            },
+            prompts: {
+                title: 'システムプロンプト',
+                subtitle: '既定のシステムプロンプトを設定',
+                mainLabel: 'メインプロンプト',
+                mainHelp: '一般的な問い合わせに使用',
+                mainPlaceholder: 'メインのシステムプロンプトを入力...',
+                analystLabel: 'アナリストプロンプト',
+                analystHelp: '返信の分析に使用',
+                analystPlaceholder: 'アナリスト用プロンプトを入力...',
+                charCount: '{{count}} 文字',
+                saveButton: 'プロンプトを保存',
+                saving: '保存中...',
+                saved: '保存しました！'
+            },
+            personaeditmodal: {
+                title: 'ペルソナを編集',
+                nameLabel: '名前',
+                greetingLabel: '挨拶',
+                descriptionLabel: '説明',
+                tagsLabel: 'タグ',
+                addTagPlaceholder: 'タグを追加...',
+                addButton: '追加',
+                saveChangesButton: '変更を保存'
+            },
+            personaedit: {
+                title: 'ペルソナを編集',
+                subtitle: '既存のペルソナを検索して編集',
+                updatedSuccess: 'ペルソナ {{name}} を更新しました！',
+                updateFailed: 'ペルソナの更新に失敗しました: {{message}}'
+            },
+            personachip: {
+                ariaRemove: '{{name}} を削除'
+            },
+            personacard: {
+                ariaViewDetails: '詳細を表示',
+                description: '説明',
+                tagsLabel: 'タグ ({{count}})',
+                metadata: 'メタデータ',
+                id: 'ID',
+                totalTags: 'タグ合計',
+                close: '閉じる',
+                addToSelection: '選択に追加',
+                removeFromSelection: '選択から削除'
+            },
+            tagpicker: {
+                clearAll: 'すべてクリア',
+                inputPlaceholder: 'タグを検索...',
+                ariaRemove: '{{name}} を削除',
+                noTagsFound: 'タグが見つかりません',
+                createTag: '"{{name}}" タグを作成',
+                noMatchingFound: '"{{value}}" に一致するタグは見つかりません'
+            },
+            header: {
+                home: 'ホーム',
+                settings: '設定',
+                changeLanguage: '言語を変更'
+            },
+            questioninput: {
+                placeholder: '何を質問しますか？'
+            },
             analysistab: {
+                analysisTitle: 'AI分析',
+                subtitle: '包括的な回答分析',
+                startAnalysis: '分析を開始',
+                analyzing: '分析中...',
+                analysisComplete: '分析完了',
                 analysisFailed: '分析に失敗しました',
                 downloadJsonTitle: '分析をJSONとしてダウンロード',
                 downloadJson: 'JSONをダウンロード'
+            },
+            responsecard: {
+                waiting: '待機中...',
+                responding: '返答中...',
+                completed: '完了',
+                error: 'エラー',
+                idle: 'アイドル',
+                waitingInQueue: 'キューで待機中...',
+                failedToGetResponse: '応答の取得に失敗しました',
+                completedIn: '{{seconds}}秒で完了'
+            },
+            sentiment: {
+                positive: 'ポジティブ',
+                neutral: 'ニュートラル',
+                negative: 'ネガティブ'
             }
-            // TODO: Add translations for new keys in Japanese
         }
     }
 };
