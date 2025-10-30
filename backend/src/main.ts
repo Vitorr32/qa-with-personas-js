@@ -12,7 +12,12 @@ async function bootstrap() {
     origin: (origin, callback) => {
       // Allow requests with no origin like mobile apps or server-to-server
       if (!origin) return callback(null, true);
-      const allowed = [frontendUrl, 'http://localhost:3000', 'http://localhost:3001'];
+      const allowed = [
+        frontendUrl,
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://localhost:3001',
+      ];
       if (allowed.includes(origin)) return callback(null, true);
       return callback(new Error('Origin not allowed by CORS'));
     },
@@ -37,6 +42,9 @@ async function bootstrap() {
     }
   }
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = Number(process.env.PORT) || 5000;
+  const host = '0.0.0.0';
+  await app.listen(port, host);
+  console.log(`API listening on http://${host}:${port}`);
 }
 bootstrap();
