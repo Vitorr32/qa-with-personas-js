@@ -32,7 +32,8 @@ import { DatasetImportService } from './import/dataset.service.js';
     TypeOrmModule.forFeature([Persona, Tag, Prompts]),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/uploads',
+      // Serve uploads under the /api prefix for consistency in production
+      serveRoot: '/api/uploads',
     }),
     ConfigModule.forRoot(),
   ],

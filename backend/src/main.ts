@@ -5,6 +5,8 @@ import { DataSource } from 'typeorm';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  // Standardize all backend routes under /api to match frontend proxying
+  app.setGlobalPrefix('api');
   // Configure CORS to allow frontend requests.
   // By default allow common dev origins and an optional FRONTEND_URL env var for production.
   const frontendUrl = process.env.FRONTEND_URL || `http://localhost:${process.env.FRONTEND_PORT || 5173}`;
