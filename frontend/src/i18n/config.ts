@@ -108,6 +108,12 @@ const resources = {
                 addButton: 'Add',
                 saveChangesButton: 'Save Changes'
             },
+            personaedit: {
+                title: 'Edit Personas',
+                subtitle: 'Search and modify existing personas',
+                updatedSuccess: 'Persona {{name}} updated successfully!',
+                updateFailed: 'Failed to update persona: {{message}}'
+            },
             personachip: {
                 ariaRemove: 'Remove {{name}}'
             },

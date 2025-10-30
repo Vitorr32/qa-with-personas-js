@@ -8,8 +8,10 @@ import { Tag } from '../../utils/Tag';
 import { errorToast, successToast } from '../../utils/Toasts';
 import SearchBox from '../utils/SearchBox';
 import LoadingContainer from '../utils/LoadingContainer';
+import { useTranslation } from 'react-i18next';
 
 export default function PersonaEdit() {
+    const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     const [pageSize] = useState(20);
@@ -33,10 +35,10 @@ export default function PersonaEdit() {
     async function handleSave(updated: Persona) {
         try {
             await updatePersona(updated).unwrap();
-            successToast(`Persona ${updated.name} updated succesfully!`);
+            successToast(t('personaedit.updatedSuccess', { name: updated.name }));
             setEditingPersona(null);
         } catch (err: any) {
-            errorToast(`Failed to update persona: ${err?.data?.message || err.message}`);
+            errorToast(t('personaedit.updateFailed', { message: err?.data?.message || err.message }));
         }
     }
 
@@ -71,14 +73,21 @@ export default function PersonaEdit() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
         >
+            <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('personaedit.title')}</h2>
+                <p className="text-gray-600">{t('personaedit.subtitle')}</p>
+            </div>
+
+            <SearchBox setSearchQuery={setSearchQuery} setSelectedTags={setSelectedTags} searchQuery={searchQuery} selectedTags={selectedTags} injectWrapperClassNames="bg-white rounded-xl p-6 border border-gray-200 shadow-lg" />
+
             <LoadingContainer isLoading={loadingPersonas || isFetching}>
                 <>
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Edit Personas</h2>
-                        <p className="text-gray-600">Search and modify existing personas</p>
-                    </div>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                            {t('remove.foundCount', { count: items.length })}
+                        </h3>
 
-                    <SearchBox setSearchQuery={setSearchQuery} setSelectedTags={setSelectedTags} searchQuery={searchQuery} selectedTags={selectedTags} injectWrapperClassNames="bg-white rounded-xl p-6 border border-gray-200 shadow-lg" />
+                    </div>
 
                     {/* Personas Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -94,7 +103,7 @@ export default function PersonaEdit() {
                     {items.length === 0 && !(loadingPersonas || isFetching) && (
                         <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
                             <div className="text-4xl mb-2">🔍</div>
-                            <p className="text-gray-600">No personas found</p>
+                            <p className="text-gray-600">{t('personagrid.noFound')}</p>
                         </div>
                     )}
 
@@ -112,7 +121,7 @@ export default function PersonaEdit() {
                                 }}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md"
                             >
-                                Load more
+                                {t('personagrid.loadMore')}
                             </button>
                         </div>
                     )}
