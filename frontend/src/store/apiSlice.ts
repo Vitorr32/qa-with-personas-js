@@ -10,7 +10,7 @@ export const apiSlice = createApi({
     tagTypes: ['Personas', 'Tags', 'Prompts'],
     endpoints: (builder) => ({
         getPersonas: builder.query<
-            { items: Persona[]; nextCursor?: string; hasMore: boolean },
+            { items: Persona[]; nextCursor?: string; hasMore: boolean; totalCount?: number },
             { pageSize?: number; cursor?: string; inputQuery?: string; tags?: Tag[] } | void
         >({
             query: (args = {}) => {

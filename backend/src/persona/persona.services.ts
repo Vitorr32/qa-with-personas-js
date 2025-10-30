@@ -81,21 +81,23 @@ export class PersonasService {
         cursor?: string,
         inputQuery?: string,
         tagIds?: string[],
-    ): Promise<{ items: Persona[]; nextCursor?: string; hasMore: boolean }> {
+    ): Promise<{ items: Persona[]; nextCursor?: string; hasMore: boolean; totalCount: number }> {
         const qb = this.personaRepo.createQueryBuilder('persona').leftJoinAndSelect('persona.tags', 'tag');
+        const countQb = this.personaRepo.createQueryBuilder('persona').leftJoin('persona.tags', 'tag');
 
         // Search filter
         if (inputQuery && inputQuery.trim().length > 0) {
             const q = `%${inputQuery.trim().toLowerCase()}%`;
-            qb.andWhere(
-                '(LOWER(persona.name) LIKE :q OR LOWER(persona.greeting) LIKE :q OR LOWER(persona.description) LIKE :q)',
-                { q },
-            );
+            const whereExpr =
+                '(LOWER(persona.name) LIKE :q OR LOWER(persona.greeting) LIKE :q OR LOWER(persona.description) LIKE :q)';
+            qb.andWhere(whereExpr, { q });
+            countQb.andWhere(whereExpr, { q });
         }
 
         // Tag filter (match any of the provided tag ids)
         if (tagIds && tagIds.length > 0) {
             qb.andWhere('tag.id IN (:...tagIds)', { tagIds });
+            countQb.andWhere('tag.id IN (:...tagIds)', { tagIds });
         }
 
         // Ordering: newest first. Use createdAt + id for a stable cursor.
@@ -117,7 +119,11 @@ export class PersonasService {
 
         // Fetch one extra record to determine if there's a next page
         const take = Math.max(1, Math.min(500, pageSize));
-        const raw = await qb.take(take + 1).getMany();
+    const raw = await qb.take(take + 1).getMany();
+
+    // total count with same filters (distinct personas due to join)
+    const rawCount = await countQb.select('COUNT(DISTINCT persona.id)', 'cnt').getRawOne<{ cnt: string }>();
+    const totalCount = rawCount && rawCount.cnt ? parseInt(rawCount.cnt, 10) : 0;
 
         const hasMore = raw.length > take;
         const items = raw.slice(0, take);
@@ -128,7 +134,7 @@ export class PersonasService {
             nextCursor = `${last.createdAt.toISOString()}|${last.id}`;
         }
 
-        return { items, nextCursor, hasMore };
+        return { items, nextCursor, hasMore, totalCount };
     }
 
     async findOne(id: string): Promise<Persona> {

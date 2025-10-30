@@ -28,6 +28,7 @@ export default function PersonaGrid({
     const [cursor, setCursor] = useState<string | undefined>(undefined);
     const [items, setItems] = useState<Persona[]>([]);
     const [hasMore, setHasMore] = useState(false);
+    const [totalCount, setTotalCount] = useState<number>(0);
     const [refreshKey, setRefreshKey] = useState(0);
     const queryArgs = useMemo(() => ({
         pageSize,
@@ -50,6 +51,9 @@ export default function PersonaGrid({
         // personasPage might be the legacy array or the new paged shape
         const newItems: Persona[] = Array.isArray(personasPage) ? personasPage : personasPage?.items || [];
         const newHasMore = Array.isArray(personasPage) ? false : personasPage.hasMore;
+        const newTotalCount = Array.isArray(personasPage)
+            ? newItems.length
+            : (personasPage.totalCount ?? newItems.length);
 
         // if cursor is undefined, it's the first page -> replace
         if (!cursor) {
@@ -58,6 +62,7 @@ export default function PersonaGrid({
             setItems((prev) => [...prev, ...newItems]);
         }
         setHasMore(newHasMore);
+        setTotalCount(newTotalCount);
     }, [personasPage]);
 
     // reset pagination when filters change
@@ -71,7 +76,7 @@ export default function PersonaGrid({
         <div>
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
-                    {t('personagrid.foundCount', { count: items.length })}
+                    {t('personagrid.foundCount', { count: totalCount })}
                 </h3>
 
                 {items.length > 0 && (
