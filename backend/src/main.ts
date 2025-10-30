@@ -8,23 +8,40 @@ async function bootstrap() {
   // Standardize all backend routes under /api to match frontend proxying
   app.setGlobalPrefix('api');
   // Configure CORS to allow frontend requests.
-  // By default allow common dev origins and an optional FRONTEND_URL env var for production.
+  const isProd = process.env.NODE_ENV === 'production';
   const frontendUrl = process.env.FRONTEND_URL || `http://localhost:${process.env.FRONTEND_PORT || 5173}`;
-  app.enableCors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin like mobile apps or server-to-server
-      if (!origin) return callback(null, true);
-      const allowed = [
-        frontendUrl,
-        'http://localhost:5173',
-        'http://localhost:3000',
-        'http://localhost:3001',
-      ];
-      if (allowed.includes(origin)) return callback(null, true);
-      return callback(new Error('Origin not allowed by CORS'));
-    },
-    credentials: true,
-  });
+
+  if (isProd) {
+    // In production behind a proxy, reflect the Origin to avoid false blocks
+    app.enableCors({ origin: true, credentials: true });
+  } else {
+    // Allow common dev origins explicitly
+    const allowed = new Set<string>();
+    const add = (u?: string) => { if (!u) return; allowed.add(u.replace(/\/$/, '')); };
+    add(frontendUrl);
+    add('http://localhost:5173');
+    add('http://localhost:3000');
+    add('http://localhost:3001');
+    add('http://127.0.0.1:5173');
+    add('http://127.0.0.1:3000');
+    add('http://127.0.0.1:3001');
+
+    app.enableCors({
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        try {
+          const url = new URL(origin);
+          const isDefaultPort = (url.protocol === 'http:' && (url.port === '' || url.port === '80'))
+            || (url.protocol === 'https:' && (url.port === '' || url.port === '443'));
+          const normalized = `${url.protocol}//${url.hostname}${isDefaultPort ? '' : ':' + url.port}`;
+          if (allowed.has(normalized)) return callback(null, true);
+        } catch { /* ignore */ }
+        if (allowed.has((origin || '').replace(/\/$/, ''))) return callback(null, true);
+        return callback(new Error('Origin not allowed by CORS'));
+      },
+      credentials: true,
+    });
+  }
 
   // Increase body size limits to handle large amounts of text data
   app.use(bodyParser.json({ limit: '50mb' }));
