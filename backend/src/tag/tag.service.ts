@@ -22,22 +22,35 @@ export class TagsService {
      * Find tags whose name contains the provided query (case-insensitive).
      * Used by frontend autocomplete to suggest matching tags.
      */
-    async findByQuery(query: string): Promise<Tag[]> {
+    async findByQuery(query: string, limit?: number): Promise<Tag[]> {
         const q = query.trim().toLowerCase();
-        return this.tagRepo
+        let qb = this.tagRepo
             .createQueryBuilder('tag')
+            .leftJoin('tag.personas', 'persona')
             .where('LOWER(tag.name) LIKE :q', { q: `%${q}%` })
-            .leftJoinAndSelect('tag.personas', 'persona')
-            .getMany();
+            // Prefer tags with more usage
+            .groupBy('tag.id')
+            .orderBy('COUNT(persona.id)', 'DESC');
+
+        if (limit && Number.isFinite(limit)) {
+            qb = qb.limit(limit);
+        }
+
+        return qb.getMany();
     }
 
-    async getUniqueTags(): Promise<Tag[]> {
-        // Get all distinct tags used by personas
-        const tags = await this.tagRepo
+    async getUniqueTags(limit?: number): Promise<Tag[]> {
+        // Get distinct tags used by personas, ordered by usage count desc
+        let qb = this.tagRepo
             .createQueryBuilder('tag')
-            .innerJoinAndSelect('tag.personas', 'persona')
-            .distinct(true)
-            .getMany();
-        return tags;
+            .innerJoin('tag.personas', 'persona')
+            .groupBy('tag.id')
+            .orderBy('COUNT(persona.id)', 'DESC');
+
+        if (limit && Number.isFinite(limit)) {
+            qb = qb.limit(limit);
+        }
+
+        return qb.getMany();
     }
 }

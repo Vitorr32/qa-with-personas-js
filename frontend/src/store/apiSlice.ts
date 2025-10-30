@@ -118,11 +118,25 @@ export const apiSlice = createApi({
         }),
 
         getTags: builder.query<Tag[], string | void>({
-            query: (inputQuery: string | void) => ({
-                url: '/tags',
-                params: { inputQuery },
-                method: 'GET',
-            }),
+            query: (inputQuery: string | void) => {
+                const hasQuery = typeof inputQuery === 'string' && inputQuery.trim().length > 0;
+                const params: Record<string, any> = {};
+
+                if (hasQuery) {
+                    params.inputQuery = inputQuery;
+                    // Cap suggestions during typing
+                    params.limit = 15;
+                } else {
+                    // Initial small set
+                    params.limit = 5;
+                }
+
+                return {
+                    url: '/tags',
+                    params,
+                    method: 'GET',
+                };
+            },
             providesTags: [{ type: 'Tags', id: 'LIST' }],
         }),
 
