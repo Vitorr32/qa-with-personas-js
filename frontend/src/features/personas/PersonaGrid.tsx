@@ -26,10 +26,12 @@ export default function PersonaGrid({
     const { t } = useTranslation();
     const [pageSize] = useState(20);
     const [cursor, setCursor] = useState<string | undefined>(undefined);
+    const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
     const [items, setItems] = useState<Persona[]>([]);
     const [hasMore, setHasMore] = useState(false);
     const [totalCount, setTotalCount] = useState<number>(0);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [isAddingAll, setIsAddingAll] = useState(false);
     const queryArgs = useMemo(() => ({
         pageSize,
         cursor,
@@ -51,6 +53,7 @@ export default function PersonaGrid({
         // personasPage might be the legacy array or the new paged shape
         const newItems: Persona[] = Array.isArray(personasPage) ? personasPage : personasPage?.items || [];
         const newHasMore = Array.isArray(personasPage) ? false : personasPage.hasMore;
+        const newNextCursor = Array.isArray(personasPage) ? undefined : personasPage.nextCursor;
         const newTotalCount = Array.isArray(personasPage)
             ? newItems.length
             : (personasPage.totalCount ?? newItems.length);
@@ -62,15 +65,56 @@ export default function PersonaGrid({
             setItems((prev) => [...prev, ...newItems]);
         }
         setHasMore(newHasMore);
+        setNextCursor(newNextCursor);
         setTotalCount(newTotalCount);
     }, [personasPage]);
 
     // reset pagination when filters change
     useEffect(() => {
         setCursor(undefined);
+        setNextCursor(undefined);
         setItems([]);
         setRefreshKey((k) => k + 1);
     }, [searchQuery, selectedTags]);
+
+    const handleAddAll = async () => {
+        try {
+            setIsAddingAll(true);
+
+            const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
+            const params = new URLSearchParams();
+            // Use the backend's max page size to minimize round trips
+            params.set('pageSize', '500');
+            if (searchQuery && searchQuery.trim().length > 0) params.set('inputQuery', searchQuery);
+            if (selectedTags && selectedTags.length > 0) {
+                params.set('tags', JSON.stringify(selectedTags.map(t => t.id)));
+            }
+
+            const all: Persona[] = [];
+            let localCursor: string | undefined = undefined;
+
+            // Loop through all pages using the opaque nextCursor provided by backend
+            while (true) {
+                if (localCursor) params.set('cursor', localCursor);
+                else params.delete('cursor');
+
+                const res = await fetch(`${baseUrl}/personas?${params.toString()}`, { method: 'GET' });
+                if (!res.ok) break;
+                const data = await res.json();
+
+                const pageItems: Persona[] = Array.isArray(data) ? data : (data?.items ?? []);
+                all.push(...pageItems);
+
+                const next: string | undefined = Array.isArray(data) ? undefined : data?.nextCursor;
+                if (!next) break;
+                localCursor = next;
+            }
+
+            if (all.length > 0) onAddAllFiltered(all);
+        } finally {
+            setIsAddingAll(false);
+        }
+    };
 
     return (
         <div>
@@ -81,9 +125,9 @@ export default function PersonaGrid({
 
                 {items.length > 0 && (
                     <button
-                        onClick={() => onAddAllFiltered(items)}
-                        disabled={allFilteredSelected}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${allFilteredSelected
+                        onClick={handleAddAll}
+                        disabled={allFilteredSelected || isAddingAll}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${allFilteredSelected || isAddingAll
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200'
                             }`}
@@ -96,14 +140,14 @@ export default function PersonaGrid({
                         ) : (
                             <>
                                 <Plus className="w-4 h-4" />
-                                {t('personagrid.addAll')}
+                                {isAddingAll ? t('common.loading') : t('personagrid.addAll')}
                             </>
                         )}
                     </button>
                 )}
             </div>
 
-            <LoadingContainer isLoading={loadingPersonas || isFetching}>
+            <LoadingContainer isLoading={loadingPersonas || isFetching || isAddingAll}>
                 {items.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {items.map((persona, index) => (
@@ -130,7 +174,8 @@ export default function PersonaGrid({
                 {hasMore && (
                     <div className="flex justify-center my-6">
                         <button
-                            onClick={() => setCursor(items[items.length - 1].id)}
+                            onClick={() => nextCursor && setCursor(nextCursor)}
+                            disabled={!nextCursor}
                             className="px-6 py-3 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium border border-gray-300"
                         >
                             {t('personagrid.loadMore')}

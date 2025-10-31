@@ -68,7 +68,8 @@ const resources = {
             },
             common: {
                 done: 'Done',
-                cancel: 'Cancel'
+                cancel: 'Cancel',
+                loading: 'Loading...'
             },
             personaadd: {
                 title: 'Add New Persona',
