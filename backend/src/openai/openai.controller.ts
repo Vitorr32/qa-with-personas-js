@@ -55,6 +55,8 @@ export class OpenAIController {
 
     const fileInputs = dto.fileIds?.map(id => ({ type: "file", file_id: id })) || [];
 
+    const mainTemp = Math.max(0.1, Math.min(2, Number((prompts as any).temperature ?? 0.7)));
+
     const payload: any = {
       model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       messages: [
@@ -69,7 +71,7 @@ export class OpenAIController {
         },
       ],
       stream: true,
-      temperature: 0.7,
+      temperature: mainTemp,
       max_tokens: 1000,
     };
 

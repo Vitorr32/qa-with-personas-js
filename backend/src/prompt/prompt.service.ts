@@ -25,6 +25,7 @@ export class PromptsService {
             id: prompts.id,
             mainPrompt: prompts.mainPrompt,
             analystPrompt: prompts.analystPrompt,
+            temperature: typeof (prompts as any).temperature === 'number' ? (prompts as any).temperature : 0.7,
         };
     }
 
@@ -42,6 +43,9 @@ export class PromptsService {
             // Update existing row
             prompts.mainPrompt = updatePromptsDto.mainPrompt;
             prompts.analystPrompt = updatePromptsDto.analystPrompt;
+            // Coerce and clamp temperature server-side to be safe
+            const temp = Math.max(0.1, Math.min(2, Number((updatePromptsDto as any).temperature ?? (prompts as any).temperature ?? 0.7)));
+            (prompts as any).temperature = temp;
         }
 
         const savedPrompts = await this.promptsRepository.save(prompts);
@@ -50,6 +54,7 @@ export class PromptsService {
             id: savedPrompts.id,
             mainPrompt: savedPrompts.mainPrompt,
             analystPrompt: savedPrompts.analystPrompt,
+            temperature: (savedPrompts as any).temperature ?? 0.7,
         };
     }
 }

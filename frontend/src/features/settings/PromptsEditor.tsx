@@ -14,19 +14,23 @@ export default function PromptsEditor() {
     const [saved, setSaved] = useState(false);
     const [mainPrompt, setMainPrompt] = useState('');
     const [analystPrompt, setAnalystPrompt] = useState('');
+    const [temperature, setTemperature] = useState(0.7);
 
     // Sync query data into local state when it arrives
     useEffect(() => {
         if (data) {
             setMainPrompt(data.mainPrompt || '');
             setAnalystPrompt(data.analystPrompt || '');
+            setTemperature(typeof data.temperature === 'number' ? data.temperature : 0.7);
         }
     }, [data]);
 
     const handleSave = async () => {
         setSaved(false);
         try {
-            await updatePrompts({ mainPrompt, analystPrompt }).unwrap();
+            // Clamp temperature on save as an extra safety
+            const clampedTemp = Math.max(0.1, Math.min(2, Number(temperature) || 0.7));
+            await updatePrompts({ mainPrompt, analystPrompt, temperature: clampedTemp }).unwrap();
             setSaved(true);
             successToast("Prompts updated succesfully!");
             // hide the saved indicator after a short delay
@@ -45,13 +49,13 @@ export default function PromptsEditor() {
         >
             <LoadingContainer isLoading={isLoading}>
                 <>
-                    <div>
+                    <div className="mb-4">
                         <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('prompts.title')}</h2>
                         <p className="text-gray-600">{t('prompts.subtitle')}</p>
                     </div>
 
                     {/* Main Prompt */}
-                    <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
+                    <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-lg mb-4">
                         <label className="block mb-2">
                             <span className="text-sm font-semibold text-gray-700">{t('prompts.mainLabel')}</span>
                             <span className="text-xs text-gray-500 ml-2">{t('prompts.mainHelp')}</span>
@@ -66,7 +70,7 @@ export default function PromptsEditor() {
                     </div>
 
                     {/* Analyst Prompt */}
-                    <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
+                    <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-lg mb-4">
                         <label className="block mb-2">
                             <span className="text-sm font-semibold text-gray-700">{t('prompts.analystLabel')}</span>
                             <span className="text-xs text-gray-500 ml-2">{t('prompts.analystHelp')}</span>
@@ -78,6 +82,39 @@ export default function PromptsEditor() {
                             placeholder={t('prompts.analystPlaceholder')}
                         />
                         <p className="text-xs text-gray-500 mt-2">{t('prompts.charCount', { count: analystPrompt.length || 0 })}</p>
+                    </div>
+
+                    {/* Temperature */}
+                    <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-lg mb-4">
+                        <label className="block mb-2">
+                            <span className="text-sm font-semibold text-gray-700">{t('prompts.temperatureLabel', 'Temperature')}</span>
+                            <span className="text-xs text-gray-500 ml-2">{t('prompts.temperatureHelp', 'Controls randomness for main prompt questions (0.1–2.0)')}</span>
+                        </label>
+                        <div className="flex items-center gap-4">
+                            <input
+                                type="range"
+                                min={0.1}
+                                max={2}
+                                step={0.1}
+                                value={temperature}
+                                onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                                className="flex-1"
+                            />
+                            <input
+                                type="number"
+                                min={0.1}
+                                max={2}
+                                step={0.1}
+                                value={Number.isFinite(temperature) ? temperature : 0.7}
+                                onChange={(e) => {
+                                    const v = parseFloat(e.target.value);
+                                    if (isNaN(v)) { setTemperature(0.7); return; }
+                                    setTemperature(v);
+                                }}
+                                className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">{t('prompts.temperatureRange', 'Allowed range: 0.1 – 2.0')}</p>
                     </div>
 
                     {/* Save Button */}
