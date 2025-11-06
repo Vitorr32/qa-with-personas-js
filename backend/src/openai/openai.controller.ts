@@ -43,6 +43,10 @@ export class OpenAIController {
       throw new BadRequestException('personaId and question are required');
     }
 
+    // Sanitize inputs (handle CRLF from multipart forms)
+    dto.personaId = String(dto.personaId).trim();
+    dto.question = String(dto.question).trim();
+
     const persona = await this.personas.findOne(dto.personaId);
     if (!persona) throw new NotFoundException('Persona not found');
 
@@ -130,7 +134,16 @@ export class OpenAIController {
   @UseInterceptors(FilesInterceptor('files'))
   async analyze(@Body() dto: AnalyzeRequestDto, @UploadedFiles() _files: Express.Multer.File[]) {
     if (!dto || !dto.responses || !Array.isArray(dto.responses)) {
-      throw new BadRequestException('responses array is required');
+      // If multipart form, parse responses JSON
+      if (dto && (dto as any).responses && typeof (dto as any).responses === 'string') {
+        try {
+          (dto as any).responses = JSON.parse((dto as any).responses);
+        } catch {
+          throw new BadRequestException('responses array is required');
+        }
+      } else {
+        throw new BadRequestException('responses array is required');
+      }
     }
 
     if (dto.responses.length === 0) {

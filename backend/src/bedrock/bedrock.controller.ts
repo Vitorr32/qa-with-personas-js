@@ -42,6 +42,10 @@ export class BedrockController {
       throw new BadRequestException('personaId and question are required');
     }
 
+    // Sanitize inputs (handle CRLF from multipart forms)
+    dto.personaId = String(dto.personaId).trim();
+    dto.question = String(dto.question).trim();
+
     const persona = await this.personas.findOne(dto.personaId);
     if (!persona) throw new NotFoundException('Persona not found');
 
@@ -137,7 +141,16 @@ export class BedrockController {
   @UseInterceptors(FilesInterceptor('files'))
   async analyze(@Body() dto: AnalyzeRequestDto, @UploadedFiles() files: Express.Multer.File[]) {
     if (!dto || !dto.responses || !Array.isArray(dto.responses)) {
-      throw new BadRequestException('responses array is required');
+      // If coming as multipart, responses can be a JSON string
+      if (dto && (dto as any).responses && typeof (dto as any).responses === 'string') {
+        try {
+          (dto as any).responses = JSON.parse((dto as any).responses);
+        } catch {
+          throw new BadRequestException('responses array is required');
+        }
+      } else {
+        throw new BadRequestException('responses array is required');
+      }
     }
     if (dto.responses.length === 0) {
       throw new BadRequestException('responses array cannot be empty');
@@ -153,7 +166,7 @@ export class BedrockController {
 
     const prompts = await this.prompts.getPrompts();
 
-    const hasFiles = Array.isArray(files) && files.length > 0;
+  const hasFiles = Array.isArray(files) && files.length > 0;
     const messages: { role: 'user' | 'assistant'; content: string }[] = [
       { role: 'user', content: `Question Asked: ${dto.question}` },
     ];
