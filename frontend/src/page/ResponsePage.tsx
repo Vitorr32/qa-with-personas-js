@@ -7,8 +7,7 @@ import { ResponseStatus } from '../types/utils';
 import ResponseCard from '../features/response/ResponseCard';
 import { useDispatch } from 'react-redux';
 import { useUploadOpenAIFileMutation, useGetPersonasQuery } from '../store/apiSlice';
-import { setPersonas, setFilesIds, cleanResponses } from '../store/questionSlice';
-import { extractMessageFromErrorAndToast } from '../utils/Toasts';
+import { setPersonas, cleanResponses } from '../store/questionSlice';
 import AnalysisTab from '../features/response/AnalysisTab';
 import { useTranslation } from 'react-i18next';
 
@@ -24,7 +23,6 @@ export default function ResponsesPage() {
     const [allCompleted, setAllCompleted] = useState(false);
     const [completedCount, setCompletedCount] = useState(0);
     const dispatch = useDispatch();
-    const [uploadOpenAIFile] = useUploadOpenAIFileMutation();
     const shouldFetchAllPersonas = Boolean(question && question.trim().length > 0 && (toAskPersonas?.length ?? 0) === 0);
     // use RTK Query hook to fetch personas when needed
     const { data: personasQueryData } = useGetPersonasQuery({ pageSize: 10000 }, { skip: !shouldFetchAllPersonas });
@@ -41,8 +39,7 @@ export default function ResponsesPage() {
     }
 
     // Setup function: 1) If no personas in store but there's a question, fetch all personas and populate store
-    //                 2) If there are attached files, upload them and save returned ids in the store
-    //                 3) Clean up any previous responses 
+    //                 2) Clean up any previous responses 
     useEffect(() => {
         let mounted = true;
 
@@ -52,8 +49,7 @@ export default function ResponsesPage() {
 
             // only run setup if we have a question and there are no personas to ask
             const needPersonas = (toAskPersonas?.length ?? 0) === 0;
-            const needUpload = Boolean(attachedFiles && attachedFiles.length > 0);
-            if (!needPersonas && !needUpload) return;
+            if (!needPersonas) return;
             setIsSettingUp(true);
 
             try {
@@ -65,24 +61,7 @@ export default function ResponsesPage() {
                     }
                 }
 
-                // 2) upload attached files and save ids
-                if (needUpload && attachedFiles && attachedFiles.length > 0) {
-                    const ids: string[] = [];
-                    for (const f of attachedFiles) {
-                        try {
-                            const r: any = await uploadOpenAIFile(f as File);
-                            // r may be the RTK result wrapper or the plain data depending on runtime
-                            const payload = r?.data ?? r;
-                            const id = payload?.id ?? payload?.result?.id ?? null;
-                            if (id) ids.push(id);
-                        } catch (err) {
-                            extractMessageFromErrorAndToast(err, 'Error uploading a file.');
-                        }
-                    }
-                    if (ids.length > 0) dispatch(setFilesIds(ids));
-                }
-
-                // 3 ) Clean up previous responses
+                // 2 ) Clean up previous responses
                 setResponsesStatus(new Map<string, ResponseStatus>());
                 dispatch(cleanResponses());
             } finally {
