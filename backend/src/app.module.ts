@@ -16,6 +16,8 @@ import { OpenAIService } from './openai/openai.service';
 import { ConfigModule } from '@nestjs/config';
 import { DatasetImportController } from './import/dataset.controller.js';
 import { DatasetImportService } from './import/dataset.service.js';
+import { BedrockController } from './bedrock/bedrock.controller';
+import { BedrockService } from './bedrock/bedrock.service';
 
 @Module({
   imports: [
@@ -37,7 +39,7 @@ import { DatasetImportService } from './import/dataset.service.js';
     }),
     ConfigModule.forRoot(),
   ],
-  controllers: [PersonasController, TagsController, PromptsController, OpenAIController, DatasetImportController],
-  providers: [PersonasService, TagsService, PromptsService, OpenAIService, DatasetImportService],
+  controllers: [PersonasController, TagsController, PromptsController, OpenAIController, DatasetImportController, BedrockController],
+  providers: [PersonasService, TagsService, PromptsService, OpenAIService, DatasetImportService, BedrockService],
 })
 export class AppModule { }

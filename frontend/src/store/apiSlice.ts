@@ -186,11 +186,15 @@ export const apiSlice = createApi({
                 responsesAnalyzed: string,
             }
         }, { responses: { persona: string; response: string }[], question: string, fileIds: string[] }>({
-            query: ({ question, responses, fileIds }) => ({
-                url: '/openai/analyze',
-                method: 'POST',
-                body: { question, responses, fileIds },
-            }),
+            query: ({ question, responses, fileIds }) => {
+                const provider = (import.meta.env.VITE_LLM_PROVIDER || 'openai').toLowerCase();
+                const apiBase = provider === 'bedrock' ? '/bedrock' : '/openai';
+                return {
+                    url: `${apiBase}/analyze`,
+                    method: 'POST',
+                    body: { question, responses, fileIds },
+                };
+            },
         }),
     }),
 })

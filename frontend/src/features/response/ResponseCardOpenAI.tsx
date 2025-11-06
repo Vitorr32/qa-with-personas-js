@@ -23,7 +23,7 @@ interface ResponseCardProps {
     broadcastState: (state: ResponseStatus) => void;
 }
 
-export default function ResponseCard({ persona, broadcastState }: ResponseCardProps) {
+export default function ResponseCardOpenAI({ persona, broadcastState }: ResponseCardProps) {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const contentRef = useRef<HTMLDivElement>(null);
@@ -80,14 +80,12 @@ export default function ResponseCard({ persona, broadcastState }: ResponseCardPr
             // Create abort controller for this stream
             abortControllerRef.current = new AbortController();
 
-            // Get the base URL and provider from environment
+            // Get the base URL from environment
             const baseUrl = import.meta.env.VITE_API_BASE_URL;
-            const provider = (import.meta.env.VITE_LLM_PROVIDER || 'openai').toLowerCase();
-            const apiBase = provider === 'bedrock' ? '/bedrock' : '/openai';
 
             // Make the streaming request directly with fetch
             // We can't use RTK Query's built-in streaming, so we handle it manually
-            const response = await fetch(`${baseUrl}${apiBase}/stream`, {
+            const response = await fetch(`${baseUrl}/openai/stream`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
