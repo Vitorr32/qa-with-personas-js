@@ -31,7 +31,7 @@ export default function ResponseCardOpenAI({ persona, broadcastState }: Response
 
     const question = useSelector((state: RootState) => state.question.question);
     const response = useSelector((state: RootState) => state.question.responses[persona.id] || '');
-    const fileIds = useSelector((state: RootState) => state.question.fileIds);
+    const attachedFiles = useSelector((state: RootState) => state.question.attachedFiles);
 
     const [status, setStatus] = useState<ResponseStatus>('idle');
     const [error, setError] = useState<string | undefined>(undefined);
@@ -85,18 +85,30 @@ export default function ResponseCardOpenAI({ persona, broadcastState }: Response
 
             // Make the streaming request directly with fetch
             // We can't use RTK Query's built-in streaming, so we handle it manually
-            const response = await fetch(`${baseUrl}/openai/stream`, {
+            const hasFiles = attachedFiles && attachedFiles.length > 0;
+
+            let fetchOptions: RequestInit = {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+                signal: abortControllerRef.current.signal,
+            };
+
+            if (hasFiles) {
+                const form = new FormData();
+                form.append('personaId', persona.id);
+                form.append('question', question);
+                for (const file of attachedFiles) {
+                    form.append('files', file, file.name);
+                }
+                fetchOptions.body = form;
+            } else {
+                fetchOptions.headers = { 'Content-Type': 'application/json' };
+                fetchOptions.body = JSON.stringify({
                     personaId: persona.id,
                     question: question,
-                    fileIds: fileIds,
-                }),
-                signal: abortControllerRef.current.signal,
-            });
+                });
+            }
+
+            const response = await fetch(`${baseUrl}/openai/stream`, fetchOptions);
 
             if (!response.ok) {
                 errorToast(`Stream request failed: ${response.statusText}`);

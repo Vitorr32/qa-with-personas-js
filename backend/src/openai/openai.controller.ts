@@ -7,9 +7,10 @@ import {
   BadRequestException,
   UseInterceptors,
   UploadedFile,
+  UploadedFiles,
   Logger,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { OpenAIService } from './openai.service';
 import { PersonasService } from 'src/persona/persona.services';
 import { PromptsService } from 'src/prompt/prompt.service';
@@ -36,7 +37,8 @@ export class OpenAIController {
   ) { }
 
   @Post('stream')
-  async stream(@Body() dto: StreamRequestDto, @Res() res: any) {
+  @UseInterceptors(FilesInterceptor('files'))
+  async stream(@Body() dto: StreamRequestDto, @UploadedFiles() files: Express.Multer.File[], @Res() res: any) {
     if (!dto || !dto.personaId || !dto.question) {
       throw new BadRequestException('personaId and question are required');
     }
@@ -51,9 +53,23 @@ export class OpenAIController {
 
     // If a fileId was provided, include a short hint in the system content and
     // include it on the top-level payload for downstream use if required.
-    const finalPrompt = dto?.fileIds?.length !== 0 ? `${systemContent}\n\nReference file(s) id: ${dto.fileIds?.join(",")}` : systemContent;
+    // If files were included, upload them to OpenAI and collect file_ids
+    let uploadedFileIds: string[] = [];
+    if (Array.isArray(files) && files.length > 0) {
+      try {
+        for (const f of files) {
+          const up = await (this as any).openai.uploadFile(f);
+          if (up?.id) uploadedFileIds.push(up.id);
+        }
+      } catch (e) {
+        this.logger.error('Failed to upload files to OpenAI', e as any);
+      }
+    }
 
-    const fileInputs = dto.fileIds?.map(id => ({ type: "file", file_id: id })) || [];
+    const allFileIds = (dto.fileIds && dto.fileIds.length > 0) ? dto.fileIds : uploadedFileIds;
+    const finalPrompt = allFileIds?.length ? `${systemContent}\n\nReference file(s) id: ${allFileIds.join(",")}` : systemContent;
+
+    const fileInputs = allFileIds?.map(id => ({ type: "file", file_id: id })) || [];
 
     const mainTemp = Math.max(0.1, Math.min(2, Number((prompts as any).temperature ?? 0.7)));
 
@@ -111,7 +127,8 @@ export class OpenAIController {
   }
 
   @Post('analyze')
-  async analyze(@Body() dto: AnalyzeRequestDto) {
+  @UseInterceptors(FilesInterceptor('files'))
+  async analyze(@Body() dto: AnalyzeRequestDto, @UploadedFiles() _files: Express.Multer.File[]) {
     if (!dto || !dto.responses || !Array.isArray(dto.responses)) {
       throw new BadRequestException('responses array is required');
     }

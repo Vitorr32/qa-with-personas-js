@@ -8,7 +8,6 @@ interface QuestionState {
     attachedFiles: File[];
     tags: Tag[];
     responses: { [id: string]: string };
-    fileIds: string[];
 }
 
 const initialState: QuestionState = {
@@ -16,8 +15,7 @@ const initialState: QuestionState = {
     personas: [],
     attachedFiles: [],
     tags: [],
-    responses: {},
-    fileIds: [],
+    responses: {}
 };
 
 export const questionSlice = createSlice({
@@ -28,7 +26,6 @@ export const questionSlice = createSlice({
         setPersonas: (state, action) => { state.personas = action.payload; },
         setFiles: (state, action) => { state.attachedFiles = action.payload; },
         setTags: (state, action) => { state.tags = action.payload; },
-        setFilesIds: (state, action) => { state.fileIds = action.payload; },
         updateResponse: (state, action) => {
             const { personaId, chunk } = action.payload;
             const currentResponse = state.responses[personaId] || '';
@@ -44,5 +41,5 @@ export const questionSlice = createSlice({
     },
 });
 
-export const { setQuestion, setPersonas, setFiles, setTags, setFilesIds, updateResponse, updateFullResponse, cleanResponses } = questionSlice.actions;
+export const { setQuestion, setPersonas, setFiles, setTags, updateResponse, updateFullResponse, cleanResponses } = questionSlice.actions;
 export default questionSlice.reducer;

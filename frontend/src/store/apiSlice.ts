@@ -185,14 +185,28 @@ export const apiSlice = createApi({
                 tokensUsed: string,
                 responsesAnalyzed: string,
             }
-        }, { responses: { persona: string; response: string }[], question: string, fileIds: string[] }>({
-            query: ({ question, responses, fileIds }) => {
+        }, { responses: { persona: string; response: string }[], question: string, files?: File[] }>({
+            query: ({ question, responses, files }) => {
                 const provider = (import.meta.env.VITE_LLM_PROVIDER || 'openai').toLowerCase();
                 const apiBase = provider === 'bedrock' ? '/bedrock' : '/openai';
+                const hasFiles = files && files.length > 0;
+                if (hasFiles) {
+                    const form = new FormData();
+                    form.append('question', question);
+                    form.append('responses', JSON.stringify(responses));
+                    for (const file of files!) {
+                        form.append('files', file, file.name);
+                    }
+                    return {
+                        url: `${apiBase}/analyze`,
+                        method: 'POST',
+                        body: form,
+                    };
+                }
                 return {
                     url: `${apiBase}/analyze`,
                     method: 'POST',
-                    body: { question, responses, fileIds },
+                    body: { question, responses },
                 };
             },
         }),

@@ -21,7 +21,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
     const { t } = useTranslation();
     const question = useSelector((state: RootState) => state.question.question);
     const responses = useSelector((state: RootState) => state.question.responses);
-    const fileIds = useSelector((state: RootState) => state.question.fileIds);
+    const attachedFiles = useSelector((state: RootState) => state.question.attachedFiles);
     const [getAnalysis] = useFetchAnalysisMutation();
 
     const [analysisStatus, setAnalysisStatus] = useState<ResponseStatus>('idle');
@@ -32,7 +32,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
             setAnalysisStatus('pending');
             // Trigger analysis API call
             const formattedResponses = Object.entries(responses).map(([persona, resp]) => ({ persona, response: resp }));
-            const analysisRaw = await getAnalysis({ question, responses: formattedResponses, fileIds });
+            const analysisRaw = await getAnalysis({ question, responses: formattedResponses, files: attachedFiles });
             setAnalysisData(generateCompleteAnalysis(analysisRaw.data?.analysis || "", responses));
             setAnalysisStatus('completed');
         } catch (err) {
@@ -45,7 +45,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
         const payload = {
             generatedAt: new Date().toISOString(),
             question,
-            fileIds,
+            files: attachedFiles?.map(f => ({ name: f.name, size: f.size, type: f.type })),
             responses,
             analysis: analysisData,
         };

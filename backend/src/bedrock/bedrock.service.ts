@@ -37,6 +37,8 @@ export class BedrockService {
       temperature?: number;
       maxTokens?: number;
       useAnalysisModel?: boolean;
+      messagesOverride?: any[];
+      systemOverride?: any[];
     },
     signal?: AbortSignal,
   ): Promise<{
@@ -52,14 +54,20 @@ export class BedrockService {
 
     const modelId = input.useAnalysisModel ? this.analysisModelId : this.modelId;
 
-    const messages = input.messages.map((m) => ({
-      role: m.role,
-      content: [{ text: m.content }],
-    }));
+    const messages = input.messagesOverride
+      ? input.messagesOverride
+      : input.messages.map((m) => ({
+          role: m.role,
+          content: [{ text: m.content }],
+        }));
 
     const cmd = new ConverseCommand({
       modelId,
-      system: input.system ? [{ text: input.system }] : undefined,
+      system: input.systemOverride
+        ? input.systemOverride
+        : input.system
+        ? [{ text: input.system }]
+        : undefined,
       messages,
       inferenceConfig: {
         temperature: input.temperature ?? 0.7,
@@ -80,6 +88,8 @@ export class BedrockService {
       messages: ChatMessage[];
       temperature?: number;
       maxTokens?: number;
+      messagesOverride?: any[];
+      systemOverride?: any[];
     },
     signal?: AbortSignal,
   ): AsyncGenerator<string, void, unknown> {
@@ -90,14 +100,20 @@ export class BedrockService {
 
     const modelId = this.modelId;
 
-    const messages = input.messages.map((m) => ({
-      role: m.role,
-      content: [{ text: m.content }],
-    }));
+    const messages = input.messagesOverride
+      ? input.messagesOverride
+      : input.messages.map((m) => ({
+          role: m.role,
+          content: [{ text: m.content }],
+        }));
 
     const cmd = new ConverseStreamCommand({
       modelId,
-      system: input.system ? [{ text: input.system }] : undefined,
+      system: input.systemOverride
+        ? input.systemOverride
+        : input.system
+        ? [{ text: input.system }]
+        : undefined,
       messages,
       inferenceConfig: {
         temperature: input.temperature ?? 0.7,
