@@ -6,7 +6,7 @@ import { RootState } from '../store/store';
 import { ResponseStatus } from '../types/utils';
 import ResponseCard from '../features/response/ResponseCard';
 import { useDispatch } from 'react-redux';
-import { useUploadOpenAIFileMutation, useGetPersonasQuery } from '../store/apiSlice';
+import { useGetPersonasQuery } from '../store/apiSlice';
 import { setPersonas, cleanResponses } from '../store/questionSlice';
 import AnalysisTab from '../features/response/AnalysisTab';
 import { useTranslation } from 'react-i18next';
