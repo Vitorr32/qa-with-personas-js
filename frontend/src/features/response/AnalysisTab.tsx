@@ -1,10 +1,8 @@
 import { AlertCircle, BarChart3, Brain, CheckCircle2, Hash, Loader2, MessageSquare, PieChart, Download } from "lucide-react";
 import { useTranslation } from 'react-i18next';
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { useFetchAnalysisMutation } from "../../store/apiSlice";
-import { useState } from "react";
-import { ResponseStatus } from "../../types/utils";
 import { motion } from 'framer-motion';
 import { extractMessageFromErrorAndToast } from "../../utils/Toasts";
 import { generateCompleteAnalysis } from "../../utils/parser";
@@ -12,6 +10,7 @@ import SentimentChart from "./SentimentChart";
 import ThemesList from "./ThemesList";
 import { WordCloud } from "@isoterik/react-word-cloud";
 import { AnalysisData } from "../../utils/interfaces";
+import { setAnalysisData, setAnalysisStatus } from "../../store/questionSlice";
 
 interface AnalysisTabProps {
     canAnalyze: boolean;
@@ -19,24 +18,25 @@ interface AnalysisTabProps {
 
 export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
     const { t } = useTranslation();
+    const dispatch = useDispatch();
     const question = useSelector((state: RootState) => state.question.question);
     const responses = useSelector((state: RootState) => state.question.responses);
     const attachedFiles = useSelector((state: RootState) => state.question.attachedFiles);
     const [getAnalysis] = useFetchAnalysisMutation();
-
-    const [analysisStatus, setAnalysisStatus] = useState<ResponseStatus>('idle');
-    const [analysisData, setAnalysisData] = useState<AnalysisData>()
+    const analysisStatus = useSelector((state: RootState) => state.question.analysisStatus);
+    const analysisData = useSelector((state: RootState) => state.question.analysisData as AnalysisData | undefined);
 
     async function onStartAnalysis() {
         try {
-            setAnalysisStatus('pending');
+            dispatch(setAnalysisStatus('pending'));
             // Trigger analysis API call
             const formattedResponses = Object.entries(responses).map(([persona, resp]) => ({ persona, response: resp }));
             const analysisRaw = await getAnalysis({ question, responses: formattedResponses, files: attachedFiles });
-            setAnalysisData(generateCompleteAnalysis(analysisRaw.data?.analysis || "", responses));
-            setAnalysisStatus('completed');
+            dispatch(setAnalysisData(generateCompleteAnalysis(analysisRaw.data?.analysis || "", responses)));
+            dispatch(setAnalysisStatus('completed'));
         } catch (err) {
             extractMessageFromErrorAndToast(err, t('analysistab.analysisFailed'));
+            dispatch(setAnalysisStatus('idle'));
         }
     }
 
@@ -101,6 +101,13 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                                 <span className="font-medium">{t('analysistab.analysisComplete')}</span>
                             </div>
                             <button
+                                onClick={onStartAnalysis}
+                                className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                                title={t('analysistab.runAgain')}
+                            >
+                                <span className="text-sm">{t('analysistab.runAgain')}</span>
+                            </button>
+                            <button
                                 onClick={downloadAnalysisJSON}
                                 className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                                 disabled={!analysisData}
@@ -127,7 +134,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                         >
                             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                 <CheckCircle2 className="w-5 h-5 text-green-600" />
-                                Key Points
+                                {t('analysistab.keyPoints')}
                             </h3>
                             <ul className="space-y-3">
                                 {analysisData.keyPoints.map((point, index) => (
@@ -154,7 +161,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                         >
                             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                 <AlertCircle className="w-5 h-5 text-orange-600" />
-                                Points of Divergence
+                                {t('analysistab.divergences')}
                             </h3>
                             <ul className="space-y-3">
                                 {analysisData.divergences.map((point, index) => (
@@ -182,7 +189,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                     >
                         <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                             <MessageSquare className="w-5 h-5 text-blue-600" />
-                            Consensus View
+                            {t('analysistab.consensusView')}
                         </h3>
                         <p className="text-gray-700 bg-blue-50 rounded-lg p-4 border border-blue-100">
                             {analysisData.consensus}
@@ -200,7 +207,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                         >
                             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                 <Hash className="w-5 h-5 text-blue-600" />
-                                Word Cloud
+                                {t('analysistab.wordCloud')}
                             </h3>
                             <WordCloud words={analysisData.wordFrequency} width={400} height={300} fontSize={(word) => {
                                 // Normalize value between min and max
@@ -219,7 +226,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                         >
                             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                 <BarChart3 className="w-5 h-5 text-purple-600" />
-                                Sentiment Distribution
+                                {t('analysistab.sentimentDistribution')}
                             </h3>
                             <SentimentChart sentimentDistribution={analysisData.sentimentDistribution} />
                         </motion.div>
@@ -234,7 +241,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                     >
                         <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                             <PieChart className="w-5 h-5 text-indigo-600" />
-                            Common Themes
+                            {t('analysistab.commonThemes')}
                         </h3>
                         <ThemesList themes={analysisData.themes} />
                     </motion.div>
@@ -245,11 +252,11 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
             {analysisStatus === 'idle' && (
                 <div className="bg-white rounded-lg shadow-md border border-gray-200 p-12 text-center">
                     <Brain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Analyze</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('analysistab.readyTitle')}</h3>
                     <p className="text-gray-600 mb-6">
                         {canAnalyze
-                            ? "Click 'Start Analysis' to generate insights from all persona responses"
-                            : "Complete all persona responses first to enable analysis"}
+                            ? t('analysistab.readyHelpCan')
+                            : t('analysistab.readyHelpCant')}
                     </p>
                 </div>
             )}

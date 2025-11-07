@@ -1,6 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { Tag } from "../utils/Tag";
 import { Persona } from "../utils/Persona";
+import { AnalysisData } from "../utils/interfaces";
+import { ResponseStatus } from "../types/utils";
 
 interface QuestionState {
     question: string;
@@ -8,6 +10,8 @@ interface QuestionState {
     attachedFiles: File[];
     tags: Tag[];
     responses: { [id: string]: string };
+    analysisStatus: ResponseStatus;
+    analysisData?: AnalysisData;
 }
 
 const initialState: QuestionState = {
@@ -15,7 +19,9 @@ const initialState: QuestionState = {
     personas: [],
     attachedFiles: [],
     tags: [],
-    responses: {}
+    responses: {},
+    analysisStatus: 'idle',
+    analysisData: undefined
 };
 
 export const questionSlice = createSlice({
@@ -37,9 +43,19 @@ export const questionSlice = createSlice({
         },
         cleanResponses: (state) => {
             state.responses = {};
+        },
+        setAnalysisStatus: (state, action) => {
+            state.analysisStatus = action.payload as ResponseStatus;
+        },
+        setAnalysisData: (state, action) => {
+            state.analysisData = action.payload as AnalysisData | undefined;
+        },
+        resetAnalysis: (state) => {
+            state.analysisStatus = 'idle';
+            state.analysisData = undefined;
         }
     },
 });
 
-export const { setQuestion, setPersonas, setFiles, setTags, updateResponse, updateFullResponse, cleanResponses } = questionSlice.actions;
+export const { setQuestion, setPersonas, setFiles, setTags, updateResponse, updateFullResponse, cleanResponses, setAnalysisStatus, setAnalysisData, resetAnalysis } = questionSlice.actions;
 export default questionSlice.reducer;

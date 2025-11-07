@@ -156,7 +156,17 @@ const resources = {
                 analysisComplete: 'Analysis Complete',
                 analysisFailed: 'Analysis failed',
                 downloadJsonTitle: 'Download Analysis as JSON',
-                downloadJson: 'Download JSON'
+                downloadJson: 'Download JSON',
+                keyPoints: 'Key Points',
+                divergences: 'Points of Divergence',
+                consensusView: 'Consensus View',
+                wordCloud: 'Word Cloud',
+                sentimentDistribution: 'Sentiment Distribution',
+                commonThemes: 'Common Themes',
+                readyTitle: 'Ready to Analyze',
+                readyHelpCan: "Click 'Start Analysis' to generate insights from all persona responses",
+                readyHelpCant: 'Complete all persona responses first to enable analysis',
+                runAgain: 'Run Again'
             },
             responsecard: {
                 waiting: 'Waiting...',
@@ -326,7 +336,17 @@ const resources = {
                 analysisComplete: 'Análisis Completo',
                 analysisFailed: 'Error en el análisis',
                 downloadJsonTitle: 'Descargar análisis en JSON',
-                downloadJson: 'Descargar JSON'
+                downloadJson: 'Descargar JSON',
+                keyPoints: 'Puntos Clave',
+                divergences: 'Puntos de Divergencia',
+                consensusView: 'Vista de Consenso',
+                wordCloud: 'Nube de Palabras',
+                sentimentDistribution: 'Distribución del Sentimiento',
+                commonThemes: 'Temas Comunes',
+                readyTitle: 'Listo para Analizar',
+                readyHelpCan: "Haz clic en 'Iniciar Análisis' para generar ideas de todas las respuestas de las personas",
+                readyHelpCant: 'Completa todas las respuestas de las personas para habilitar el análisis',
+                runAgain: 'Volver a ejecutar'
             },
             responsecard: {
                 waiting: 'Esperando...',
@@ -496,7 +516,17 @@ const resources = {
                 analysisComplete: '分析完了',
                 analysisFailed: '分析に失敗しました',
                 downloadJsonTitle: '分析をJSONとしてダウンロード',
-                downloadJson: 'JSONをダウンロード'
+                downloadJson: 'JSONをダウンロード',
+                keyPoints: '重要ポイント',
+                divergences: '相違点',
+                consensusView: '合意見解',
+                wordCloud: 'ワードクラウド',
+                sentimentDistribution: '感情分布',
+                commonThemes: '共通テーマ',
+                readyTitle: '分析の準備完了',
+                readyHelpCan: '「分析を開始」をクリックして、すべてのペルソナの回答から洞察を生成します',
+                readyHelpCant: '分析を有効にするには、すべてのペルソナの回答を完了してください',
+                runAgain: '再実行'
             },
             responsecard: {
                 waiting: '待機中...',
