@@ -10,7 +10,7 @@ import SentimentChart from "./SentimentChart";
 import ThemesList from "./ThemesList";
 import { WordCloud } from "@isoterik/react-word-cloud";
 import { AnalysisData } from "../../utils/interfaces";
-import { setAnalysisData, setAnalysisStatus } from "../../store/questionSlice";
+import { setAnalysisData, setAnalysisStatus, setLastAnalysisResponseCount } from "../../store/questionSlice";
 
 interface AnalysisTabProps {
     canAnalyze: boolean;
@@ -25,6 +25,13 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
     const [getAnalysis] = useFetchAnalysisMutation();
     const analysisStatus = useSelector((state: RootState) => state.question.analysisStatus);
     const analysisData = useSelector((state: RootState) => state.question.analysisData as AnalysisData | undefined);
+    const lastAnalysisResponseCount = useSelector((state: RootState) => state.question.lastAnalysisResponseCount);
+
+    const currentResponseCount = Object.values(responses || {}).filter(r => (r?.trim()?.length ?? 0) > 0).length;
+    const hasLastAnalysis = lastAnalysisResponseCount !== null && lastAnalysisResponseCount !== undefined;
+    const lastCount = hasLastAnalysis ? (lastAnalysisResponseCount as number) : 0;
+    const newCount = hasLastAnalysis ? Math.max(0, currentResponseCount - lastCount) : 0;
+    const canRunAgain = analysisStatus === 'completed' && hasLastAnalysis && currentResponseCount !== lastCount;
 
     async function onStartAnalysis() {
         try {
@@ -34,6 +41,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
             const analysisRaw = await getAnalysis({ question, responses: formattedResponses, files: attachedFiles });
             dispatch(setAnalysisData(generateCompleteAnalysis(analysisRaw.data?.analysis || "", responses)));
             dispatch(setAnalysisStatus('completed'));
+            dispatch(setLastAnalysisResponseCount(currentResponseCount));
         } catch (err) {
             extractMessageFromErrorAndToast(err, t('analysistab.analysisFailed'));
             dispatch(setAnalysisStatus('idle'));
@@ -104,6 +112,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                                 onClick={onStartAnalysis}
                                 className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                                 title={t('analysistab.runAgain')}
+                                disabled={!canRunAgain}
                             >
                                 <span className="text-sm">{t('analysistab.runAgain')}</span>
                             </button>
@@ -119,6 +128,13 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                         </div>
                     )}
                 </div>
+                {hasLastAnalysis && (
+                    <div className={`mt-2 text-sm ${canRunAgain ? 'text-amber-600' : 'text-gray-500'}`}>
+                        {canRunAgain
+                            ? t('analysistab.lastAnalysisInfo', { last: lastCount, current: currentResponseCount, new: newCount })
+                            : t('analysistab.noNewSince', { last: lastCount, current: currentResponseCount })}
+                    </div>
+                )}
             </div>
 
             {/* Key Insights */}

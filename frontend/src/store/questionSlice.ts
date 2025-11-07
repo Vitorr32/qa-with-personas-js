@@ -12,6 +12,7 @@ interface QuestionState {
     responses: { [id: string]: string };
     analysisStatus: ResponseStatus;
     analysisData?: AnalysisData;
+    lastAnalysisResponseCount: number | null;
 }
 
 const initialState: QuestionState = {
@@ -21,7 +22,8 @@ const initialState: QuestionState = {
     tags: [],
     responses: {},
     analysisStatus: 'idle',
-    analysisData: undefined
+    analysisData: undefined,
+    lastAnalysisResponseCount: null
 };
 
 export const questionSlice = createSlice({
@@ -50,6 +52,9 @@ export const questionSlice = createSlice({
         setAnalysisData: (state, action) => {
             state.analysisData = action.payload as AnalysisData | undefined;
         },
+        setLastAnalysisResponseCount: (state, action) => {
+            state.lastAnalysisResponseCount = action.payload as number;
+        },
         resetAnalysis: (state) => {
             state.analysisStatus = 'idle';
             state.analysisData = undefined;
@@ -57,5 +62,5 @@ export const questionSlice = createSlice({
     },
 });
 
-export const { setQuestion, setPersonas, setFiles, setTags, updateResponse, updateFullResponse, cleanResponses, setAnalysisStatus, setAnalysisData, resetAnalysis } = questionSlice.actions;
+export const { setQuestion, setPersonas, setFiles, setTags, updateResponse, updateFullResponse, cleanResponses, setAnalysisStatus, setAnalysisData, setLastAnalysisResponseCount, resetAnalysis } = questionSlice.actions;
 export default questionSlice.reducer;

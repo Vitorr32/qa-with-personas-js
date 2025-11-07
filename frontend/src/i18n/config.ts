@@ -166,7 +166,9 @@ const resources = {
                 readyTitle: 'Ready to Analyze',
                 readyHelpCan: "Click 'Start Analysis' to generate insights from all persona responses",
                 readyHelpCant: 'Complete all persona responses first to enable analysis',
-                runAgain: 'Run Again'
+                runAgain: 'Run Again',
+                lastAnalysisInfo: 'Last analysis used {{last}} responses. Now {{current}} responses ({{new}} new).',
+                noNewSince: 'No new responses since last analysis ({{last}} used, {{current}} now).'
             },
             responsecard: {
                 waiting: 'Waiting...',
@@ -346,7 +348,9 @@ const resources = {
                 readyTitle: 'Listo para Analizar',
                 readyHelpCan: "Haz clic en 'Iniciar Análisis' para generar ideas de todas las respuestas de las personas",
                 readyHelpCant: 'Completa todas las respuestas de las personas para habilitar el análisis',
-                runAgain: 'Volver a ejecutar'
+                runAgain: 'Volver a ejecutar',
+                lastAnalysisInfo: 'El último análisis usó {{last}} respuestas. Ahora hay {{current}} respuestas ({{new}} nuevas).',
+                noNewSince: 'No hay respuestas nuevas desde el último análisis ({{last}} usadas, {{current}} ahora).'
             },
             responsecard: {
                 waiting: 'Esperando...',
@@ -526,7 +530,9 @@ const resources = {
                 readyTitle: '分析の準備完了',
                 readyHelpCan: '「分析を開始」をクリックして、すべてのペルソナの回答から洞察を生成します',
                 readyHelpCant: '分析を有効にするには、すべてのペルソナの回答を完了してください',
-                runAgain: '再実行'
+                runAgain: '再実行',
+                lastAnalysisInfo: '前回の分析では {{last}} 件の回答を使用しました。現在は {{current}} 件（新規 {{new}} 件）。',
+                noNewSince: '前回の分析以降、新しい回答はありません（{{last}} 件使用、現在 {{current}} 件）。'
             },
             responsecard: {
                 waiting: '待機中...',
