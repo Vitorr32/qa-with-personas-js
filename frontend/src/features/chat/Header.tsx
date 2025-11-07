@@ -24,8 +24,6 @@ function Header() {
         setShowLangMenu(false);
     };
 
-    const isActive = (path: string) => location.pathname === path;
-
     return (
         <motion.header
             layout
@@ -42,31 +40,29 @@ function Header() {
                 <motion.div className='flex items-center'>
                     <motion.nav className="flex items-center gap-2">
                         {/* Home Link */}
-                        <Link to="/">
-                            <button
-                                className={`p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${isActive('/')
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'hover:bg-gray-100 text-gray-700'
-                                    }`}
-                                aria-label={t('header.home')}
-                            >
-                                <Home className="w-5 h-5" />
-                                <span className="hidden sm:inline text-sm font-medium">{t('header.home')}</span>
-                            </button>
+                        <Link
+                            to="/"
+                            activeOptions={{ exact: true }}
+                            className="p-2 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                            activeProps={{ className: 'bg-blue-100 text-blue-700' }}
+                            inactiveProps={{ className: 'hover:bg-gray-100 text-gray-700' }}
+                            aria-label={t('header.home')}
+                        >
+                            <Home className="w-5 h-5" />
+                            <span className="hidden sm:inline text-sm font-medium">{t('header.home')}</span>
                         </Link>
 
                         {/* Settings Link */}
-                        <Link to="/settings">
-                            <button
-                                className={`p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${isActive('/settings')
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'hover:bg-gray-100 text-gray-700'
-                                    }`}
-                                aria-label={t('header.settings')}
-                            >
-                                <Settings className="w-5 h-5" />
-                                <span className="hidden sm:inline text-sm font-medium">{t('header.settings')}</span>
-                            </button>
+                        <Link
+                            to="/settings"
+                            activeOptions={{ exact: false }}
+                            className="p-2 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                            activeProps={{ className: 'bg-blue-100 text-blue-700' }}
+                            inactiveProps={{ className: 'hover:bg-gray-100 text-gray-700' }}
+                            aria-label={t('header.settings')}
+                        >
+                            <Settings className="w-5 h-5" />
+                            <span className="hidden sm:inline text-sm font-medium">{t('header.settings')}</span>
                         </Link>
                     </motion.nav>
 
