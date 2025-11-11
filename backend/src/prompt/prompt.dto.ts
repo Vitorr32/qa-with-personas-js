@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, Min, Max } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, Min, Max, IsOptional } from 'class-validator';
 
 export class UpdatePromptsDto {
     @IsString()
@@ -8,6 +8,15 @@ export class UpdatePromptsDto {
     @IsString()
     @IsNotEmpty()
     analystPrompt: string;
+
+    // Optional Bedrock model IDs
+    @IsOptional()
+    @IsString()
+    analystModel?: string;
+
+    @IsOptional()
+    @IsString()
+    responseModel?: string;
 
     // Temperature for main prompt questions
     @IsNumber()
@@ -20,5 +29,7 @@ export class PromptsResponseDto {
     id: number;
     mainPrompt: string;
     analystPrompt: string;
+    analystModel?: string | null;
+    responseModel?: string | null;
     temperature: number;
 }

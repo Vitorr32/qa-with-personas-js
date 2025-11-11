@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   Logger,
   NotFoundException,
   Post,
@@ -34,6 +35,21 @@ export class BedrockController {
     private readonly personas: PersonasService,
     private readonly prompts: PromptsService,
   ) {}
+
+  @Get('models')
+  async listModels() {
+    const models = await this.bedrock.listFoundationModels();
+    // Return a concise shape for the frontend
+    return models.map((m) => ({
+      modelId: m.modelId,
+      modelName: m.modelName,
+      providerName: m.providerName,
+      inputModalities: m.inputModalities,
+      outputModalities: m.outputModalities,
+      inferenceTypesSupported: m.inferenceTypesSupported,
+      contextWindow: m.contextWindow ?? null,
+    }));
+  }
 
   @Post('stream')
   @UseInterceptors(FilesInterceptor('files'))
@@ -114,6 +130,7 @@ export class BedrockController {
           messagesOverride,
           temperature: mainTemp,
           maxTokens: 1000,
+          modelIdOverride: (prompts as any).responseModel || undefined,
         },
         ac.signal,
       );
@@ -216,6 +233,7 @@ export class BedrockController {
         maxTokens: Number(process.env.BEDROCK_ANALYSIS_MAX_TOKENS || 2000),
         temperature: 0.3,
         useAnalysisModel: true,
+        analysisModelIdOverride: (prompts as any).analystModel || undefined,
       });
 
       return {
