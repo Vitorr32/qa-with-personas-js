@@ -7,7 +7,7 @@ import { Tag } from '../utils/Tag';
 export const apiSlice = createApi({
     reducerPath: 'api',
     baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_API_BASE_URL }),
-    tagTypes: ['Personas', 'Tags', 'Prompts'],
+    tagTypes: ['Personas', 'Tags', 'Prompts', 'BedrockModels'],
     endpoints: (builder) => ({
         getPersonas: builder.query<
             { items: Persona[]; nextCursor?: string; hasMore: boolean; totalCount?: number },
@@ -150,6 +150,23 @@ export const apiSlice = createApi({
             invalidatesTags: [{ type: 'Prompts', id: 'SINGLE' }],
         }),
 
+        // List Bedrock foundation models with context window
+        getBedrockModels: builder.query<
+            Array<{
+                modelId: string;
+                modelName?: string;
+                providerName?: string;
+                inputModalities?: string[];
+                outputModalities?: string[];
+                inferenceTypesSupported?: string[];
+                contextWindow?: number | null;
+            }>,
+            void
+        >({
+            query: () => ({ url: '/bedrock/models', method: 'GET' }),
+            providesTags: [{ type: 'BedrockModels', id: 'LIST' }],
+        }),
+
         // Upload file to OpenAI
         uploadOpenAIFile: builder.mutation<{ id: string; raw: any }, File>({
             query: (file: File) => {
@@ -221,6 +238,7 @@ export const {
     useGetTagsQuery,
     useGetPromptsQuery,
     useUpdatePromptsMutation,
+    useGetBedrockModelsQuery,
     useUploadOpenAIFileMutation,
     useCheckOpenAIFileMutation,
     useFetchAnalysisMutation
