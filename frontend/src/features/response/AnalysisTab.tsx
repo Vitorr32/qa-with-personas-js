@@ -39,9 +39,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
             // Trigger analysis API call
             const formattedResponses = Object.entries(responses).map(([persona, resp]) => ({ persona, response: resp }));
             const analysisRaw = await getAnalysis({ question, responses: formattedResponses, files: attachedFiles });
-            console.log("analysisRaw", analysisRaw)
             const analysis = await generateCompleteAnalysisAsync(analysisRaw.data?.analysis || "", responses);
-            console.log("analysis", analysis)
             dispatch(setAnalysisData(analysis));
             dispatch(setAnalysisStatus('completed'));
             dispatch(setLastAnalysisResponseCount(currentResponseCount));
@@ -143,7 +141,6 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
             {/* Key Insights */}
             {analysisStatus === 'completed' && analysisData && (
                 <>
-                    {console.log("analysisData on Render", analysisData)}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Key Points */}
                         <motion.div
@@ -229,16 +226,12 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                                 <Hash className="w-5 h-5 text-blue-600" />
                                 {t('analysistab.wordCloud')}
                             </h3>
-                            {
-                                analysisData && analysisData.wordFrequency && analysisData.wordFrequency?.length !== 0 && (
-                                    <WordCloud words={analysisData.wordFrequency} width={1000} height={800} fontSize={(word) => {
-                                        // Normalize value between min and max
-                                        const normalized = (word.value - 10) / (100 - 10);
-                                        const size = 16 + normalized * (100 - 10);
-                                        return size;
-                                    }} />
-                                )
-                            }
+                            <WordCloud words={analysisData.wordFrequency} width={400} height={300} fontSize={(word) => {
+                                // Normalize value between min and max
+                                const normalized = (word.value - 10) / (100 - 10);
+                                const size = 16 + normalized * (100 - 10);
+                                return size;
+                            }} />
                         </motion.div>
 
                         {/* Sentiment Analysis */}
