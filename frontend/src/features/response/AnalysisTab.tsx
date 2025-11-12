@@ -143,6 +143,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
             {/* Key Insights */}
             {analysisStatus === 'completed' && analysisData && (
                 <>
+                    {console.log("analysisData on Render", analysisData)}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Key Points */}
                         <motion.div
