@@ -39,7 +39,9 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
             // Trigger analysis API call
             const formattedResponses = Object.entries(responses).map(([persona, resp]) => ({ persona, response: resp }));
             const analysisRaw = await getAnalysis({ question, responses: formattedResponses, files: attachedFiles });
+            console.log("analysisRaw", analysisRaw)
             const analysis = await generateCompleteAnalysisAsync(analysisRaw.data?.analysis || "", responses);
+            console.log("analysis", analysis)
             dispatch(setAnalysisData(analysis));
             dispatch(setAnalysisStatus('completed'));
             dispatch(setLastAnalysisResponseCount(currentResponseCount));
