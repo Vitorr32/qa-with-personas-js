@@ -228,12 +228,16 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                                 <Hash className="w-5 h-5 text-blue-600" />
                                 {t('analysistab.wordCloud')}
                             </h3>
-                            <WordCloud words={analysisData.wordFrequency} width={1000} height={800} fontSize={(word) => {
-                                // Normalize value between min and max
-                                const normalized = (word.value - 10) / (100 - 10);
-                                const size = 16 + normalized * (100 - 10);
-                                return size;
-                            }} />
+                            {
+                                analysisData && analysisData.wordFrequency && analysisData.wordFrequency?.length !== 0 && (
+                                    <WordCloud words={analysisData.wordFrequency} width={1000} height={800} fontSize={(word) => {
+                                        // Normalize value between min and max
+                                        const normalized = (word.value - 10) / (100 - 10);
+                                        const size = 16 + normalized * (100 - 10);
+                                        return size;
+                                    }} />
+                                )
+                            }
                         </motion.div>
 
                         {/* Sentiment Analysis */}
