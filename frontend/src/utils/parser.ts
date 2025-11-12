@@ -253,7 +253,7 @@ export function generateCompleteAnalysis(
 type KuromojiTokenizer = any; // keep types lightweight
 let jaTokenizerPromise: Promise<KuromojiTokenizer> | null = null;
 
-async function getJaTokenizer(dicBasePath: string = "/kuromoji/dict/") {
+async function getJaTokenizer(dicBasePath: string = `${import.meta.env.BASE_URL}kuromoji/dict/`) {
     if (!jaTokenizerPromise) {
         jaTokenizerPromise = (async () => {
             const kuromoji: any = await import('kuromoji');

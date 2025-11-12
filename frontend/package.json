@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "postinstall": "node ./scripts/copy-kuromoji-dict.mjs",
+    "postinstall": "node -e \"const fs=require('fs');const fsp=fs.promises;const path=require('path');async function copyDir(s,d){await fsp.mkdir(d,{recursive:true});for(const e of await fsp.readdir(s,{withFileTypes:true})){const sp=path.join(s,e.name),dp=path.join(d,e.name);if(e.isDirectory())await copyDir(sp,dp);else if(e.isFile())await fsp.copyFile(sp,dp);}}(async()=>{try{const project=process.cwd();const src=path.join(project,'node_modules','kuromoji','dict');const dest=path.join(project,'public','kuromoji','dict');await copyDir(src,dest);console.log('[postinstall] Copied kuromoji dict to',dest);}catch(err){console.warn('[postinstall] Skip copying kuromoji dict:',err&&err.message);}})();\"",
     "build": "tsc -b && vite build",
     "dev": "vite",
     "format:check": "prettier --check .",
