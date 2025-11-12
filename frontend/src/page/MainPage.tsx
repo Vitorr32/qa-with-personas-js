@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Filter, Check, } from 'lucide-react';
+import { Filter, Check } from 'lucide-react';
 
 import QuestionInput from '../features/chat/QuestionInput';
 import PersonaGrid from '../features/personas/PersonaGrid';
 import PersonaChip from '../features/personas/PersonaChip';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from '@tanstack/react-router';
-import { setQuestion, setFiles, setPersonas, setTags } from '../store/questionSlice';
+import { setQuestion, setFiles, setPersonas, setTags, newQuestionAsked } from '../store/questionSlice';
 import { useCheckOpenAIFileMutation } from '../store/apiSlice';
 import { errorToast, successToast } from '../utils/Toasts';
 import { Tag } from '../utils/Tag';
@@ -81,6 +81,7 @@ export default function MainPage() {
         dispatch(setFiles(attachedFiles))
         dispatch(setPersonas(toAskList))
         dispatch(setTags(selectedTags))
+        dispatch(newQuestionAsked())
 
         navigate({
             to: "/response"

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "postinstall": "node ./scripts/copy-kuromoji-dict.mjs",
     "build": "tsc -b && vite build",
     "dev": "vite",
     "format:check": "prettier --check .",
@@ -16,6 +17,7 @@
     "type-check": "tsc -b --noEmit"
   },
   "dependencies": {
+    "kuromoji": "^0.1.2",
     "@isoterik/react-word-cloud": "^1.2.0",
     "@reduxjs/toolkit": "^2.6.1",
     "@tailwindcss/vite": "^4.1.14",

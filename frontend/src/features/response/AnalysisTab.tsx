@@ -5,7 +5,7 @@ import { RootState } from "../../store/store";
 import { useFetchAnalysisMutation } from "../../store/apiSlice";
 import { motion } from 'framer-motion';
 import { extractMessageFromErrorAndToast } from "../../utils/Toasts";
-import { generateCompleteAnalysis } from "../../utils/parser";
+import { generateCompleteAnalysisAsync } from "../../utils/parser";
 import SentimentChart from "./SentimentChart";
 import ThemesList from "./ThemesList";
 import { WordCloud } from "@isoterik/react-word-cloud";
@@ -39,7 +39,8 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
             // Trigger analysis API call
             const formattedResponses = Object.entries(responses).map(([persona, resp]) => ({ persona, response: resp }));
             const analysisRaw = await getAnalysis({ question, responses: formattedResponses, files: attachedFiles });
-            dispatch(setAnalysisData(generateCompleteAnalysis(analysisRaw.data?.analysis || "", responses)));
+            const analysis = await generateCompleteAnalysisAsync(analysisRaw.data?.analysis || "", responses);
+            dispatch(setAnalysisData(analysis));
             dispatch(setAnalysisStatus('completed'));
             dispatch(setLastAnalysisResponseCount(currentResponseCount));
         } catch (err) {
@@ -225,7 +226,7 @@ export default function AnalysisTab({ canAnalyze }: AnalysisTabProps) {
                                 <Hash className="w-5 h-5 text-blue-600" />
                                 {t('analysistab.wordCloud')}
                             </h3>
-                            <WordCloud words={analysisData.wordFrequency} width={400} height={300} fontSize={(word) => {
+                            <WordCloud words={analysisData.wordFrequency} width={1000} height={800} fontSize={(word) => {
                                 // Normalize value between min and max
                                 const normalized = (word.value - 10) / (100 - 10);
                                 const size = 16 + normalized * (100 - 10);

@@ -34,6 +34,12 @@ export const questionSlice = createSlice({
         setPersonas: (state, action) => { state.personas = action.payload; },
         setFiles: (state, action) => { state.attachedFiles = action.payload; },
         setTags: (state, action) => { state.tags = action.payload; },
+        newQuestionAsked : (state) => { 
+            state.responses = {}
+            state.analysisStatus = 'idle';
+            state.analysisData = undefined;
+            state.lastAnalysisResponseCount = null
+        },
         updateResponse: (state, action) => {
             const { personaId, chunk } = action.payload;
             const currentResponse = state.responses[personaId] || '';
@@ -62,5 +68,5 @@ export const questionSlice = createSlice({
     },
 });
 
-export const { setQuestion, setPersonas, setFiles, setTags, updateResponse, updateFullResponse, cleanResponses, setAnalysisStatus, setAnalysisData, setLastAnalysisResponseCount, resetAnalysis } = questionSlice.actions;
+export const { setQuestion, setPersonas, setFiles, setTags, newQuestionAsked, updateResponse, updateFullResponse, cleanResponses, setAnalysisStatus, setAnalysisData, setLastAnalysisResponseCount, resetAnalysis } = questionSlice.actions;
 export default questionSlice.reducer;

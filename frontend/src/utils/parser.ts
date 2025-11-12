@@ -76,6 +76,7 @@ export function generateWordFrequency(
         minWordLength: providedMinWordLength,
         maxWords = 100,
         stopWords = [
+            // English/common
             'this', 'that', 'with', 'from', 'have', 'will', 'would', 'could', 'should',
             'about', 'which', 'their', 'there', 'where', 'when', 'what', 'them', 'then',
             'than', 'these', 'those', 'such', 'into', 'through', 'during', 'before',
@@ -109,6 +110,22 @@ export function generateWordFrequency(
     // Choose a sensible default min length depending on script
     const minWordLength = providedMinWordLength ?? ((hasHan || hasHiragana || hasKatakana || hasHangul || hasThai) ? 1 : 4);
 
+    // Language-specific stop words (Japanese)
+    const jaStopWords = new Set<string>([
+        // Particles
+        'の','は','が','に','を','へ','で','と','も','や','か','な','ね','ぞ','ぜ','さ','よ','わ','より','まで','から','って','とか','など','ので','ため','なら',
+        // Polite/formal auxiliaries and copula
+        'です','ます','でした','でしょう','だ','だった','では','じゃ','じゃない','ください','下さい','ございます','おります','いいます','いえる',
+        // Common verbs/auxiliaries (base forms that add little meaning in summaries)
+        'する','なる','ある','いる','できる','られる','れる','させる','しまう','しまっ','して','している','ている','い','いた','いく','くる','きた',
+        // Generic nouns and function words
+        'こと','もの','ところ','場合','方','方々','私','うち','それ','これ','あれ','よう','ため','でも','しかし','ただ','そして','また','でも',
+        // Fillers/common interjections
+        'まあ','ええと','あら','ねえ','うん','はあ','あの',
+    ]);
+
+    const isJapanese = (localeHint === 'ja') || hasHiragana || hasKatakana;
+
     // Tokenize using Intl.Segmenter when available (Unicode-aware), otherwise fallback to a Unicode regex.
     let words: string[] = [];
     const SegmenterCtor = (Intl as any)?.Segmenter as (new(locales?: string | string[], options?: any) => any) | undefined;
@@ -133,12 +150,47 @@ export function generateWordFrequency(
         words = (allText.toLowerCase().match(/[\p{L}\p{N}_'’\-]+/gu) || []);
     }
 
+    // Build combined stop words
+    const stopSet = new Set<string>([...stopWords]);
+    if (isJapanese) {
+        for (const w of jaStopWords) stopSet.add(w);
+    }
+
+    // Helpers for Japanese filtering
+    const kanaOnly = /^(?:\p{Script=Hiragana}|\p{Script=Katakana}|ー)+$/u;
+    const singleKanji = /^\p{Script=Han}$/u;
+    const containsKanji = /\p{Script=Han}/u;
+    const containsKatakana = /\p{Script=Katakana}/u;
+
     // Final cleaning and filtering
-    words = words.filter(word =>
-        word.length >= minWordLength &&
-        !stopWords.includes(word) &&
-        isNaN(Number(word)) // Exclude numbers
-    );
+    words = words.filter(word => {
+        if (word.length < minWordLength) return false;
+        if (stopSet.has(word)) return false;
+        if (!isNaN(Number(word))) return false; // Exclude numbers
+
+        if (isJapanese) {
+            // Drop single-kanji tokens (too generic), e.g., '者', '県', '方'
+            if (singleKanji.test(word)) return false;
+            // Drop very short kana-only tokens (particles, endings): length <= 2
+            if (kanaOnly.test(word) && [...word].length <= 2) return false;
+            // Keep tokens that look contentful
+            const chars = [...word];
+            const hasKanji = containsKanji.test(word);
+            const hasKata = containsKatakana.test(word);
+            if (hasKanji) {
+                // Prefer at least 2 characters when containing Kanji
+                return chars.length >= 2;
+            }
+            if (hasKata) {
+                // Katakana loanwords: require length >= 2
+                return chars.length >= 2;
+            }
+            // Hiragana-only leftovers: require length >= 3 to avoid particles/auxiliary fragments
+            if (kanaOnly.test(word)) return chars.length >= 3;
+        }
+
+        return true;
+    });
 
     // Count word frequencies
     const wordCount = new Map<string, number>();
@@ -191,6 +243,111 @@ export function generateCompleteAnalysis(
     const parsedData = parseLLMResponse(llmResponse);
     const wordFrequency = generateWordFrequency(personaResponses, wordFreqOptions);
 
+    return {
+        ...parsedData,
+        wordFrequency
+    };
+}
+
+// Kuromoji-based async tokenizer for higher-quality Japanese word extraction
+type KuromojiTokenizer = any; // keep types lightweight
+let jaTokenizerPromise: Promise<KuromojiTokenizer> | null = null;
+
+async function getJaTokenizer(dicBasePath: string = "/kuromoji/dict/") {
+    if (!jaTokenizerPromise) {
+        jaTokenizerPromise = (async () => {
+            const kuromoji: any = await import('kuromoji');
+            return await new Promise<KuromojiTokenizer>((resolve, reject) => {
+                try {
+                    kuromoji
+                        .builder({ dicPath: dicBasePath })
+                        .build((err: any, tokenizer: KuromojiTokenizer) => {
+                            if (err) return reject(err);
+                            resolve(tokenizer);
+                        });
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        })();
+    }
+    return jaTokenizerPromise;
+}
+
+export async function generateWordFrequencyAsync(
+    personaResponses: PersonaResponses,
+    options: Parameters<typeof generateWordFrequency>[1] = {}
+): Promise<Word[]> {
+    const allText = Object.values(personaResponses).join(' ');
+
+    const hasHan = /\p{Script=Han}/u.test(allText);
+    const hasHiragana = /\p{Script=Hiragana}/u.test(allText);
+    const hasKatakana = /\p{Script=Katakana}/u.test(allText);
+    const locale = options.locale;
+    const isJapanese = locale === 'ja' || hasHiragana || hasKatakana || hasHan;
+
+    if (!isJapanese) {
+        // Non-Japanese: use the synchronous path
+        return generateWordFrequency(personaResponses, options);
+    }
+
+    try {
+        const tokenizer = await getJaTokenizer();
+        const tokens: any[] = tokenizer.tokenize(allText);
+
+        const { stopWords = [], maxWords = 100, minWordLength = 1 } = options;
+        const jaStopWords = new Set<string>([
+            'の','は','が','に','を','へ','で','と','も','や','か','な','ね','ぞ','ぜ','さ','よ','わ','より','まで','から','って','とか','など','ので','ため','なら',
+            'です','ます','でした','でしょう','だ','だった','では','じゃ','じゃない','ください','下さい','ございます','おります','いいます','いえる',
+            'する','なる','ある','いる','できる','られる','れる','させる','しまう','して','している','ている','い','いた','いく','くる','きた',
+            'こと','もの','ところ','場合','方','方々','私','うち','それ','これ','あれ','よう','ため','しかし','ただ','そして','また','でも','など'
+        ]);
+        const stopSet = new Set<string>([...stopWords, ...jaStopWords]);
+
+        const contents: string[] = [];
+        for (const t of tokens) {
+            const pos: string = t.pos; // e.g., 名詞, 動詞, 形容詞
+            if (pos === '名詞') {
+                const d1: string = t.pos_detail_1; // e.g., 一般, 固有名詞, 数, 代名詞, 非自立
+                if (['代名詞','数','非自立','接尾','助数詞'].includes(d1)) continue;
+                const base: string = (t.basic_form && t.basic_form !== '*') ? t.basic_form : t.surface_form;
+                if (!base || stopSet.has(base)) continue;
+                if (/^\p{Script=Han}$/u.test(base)) continue; // drop single-kanji generic nouns
+                contents.push(base.toLowerCase());
+            } else if (pos === '動詞' || pos === '形容詞') {
+                const base: string = (t.basic_form && t.basic_form !== '*') ? t.basic_form : t.surface_form;
+                if (!base || stopSet.has(base)) continue;
+                if (/^(?:\p{Script=Hiragana}|\p{Script=Katakana}|ー){1,2}$/u.test(base)) continue; // drop short endings
+                contents.push(base.toLowerCase());
+            }
+        }
+
+        const filtered = contents.filter(w => w.length >= minWordLength && !/^[0-9]+$/.test(w));
+        const map = new Map<string, number>();
+        for (const w of filtered) map.set(w, (map.get(w) || 0) + 1);
+        const sorted = Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, maxWords);
+        if (sorted.length === 0) return [];
+        const counts = sorted.map(([, c]) => c);
+        const min = Math.min(...counts);
+        const max = Math.max(...counts);
+        const minSize = 10, maxSize = 100;
+        return sorted.map(([word, count]) => ({
+            text: word,
+            value: Math.round(max === min ? (minSize + maxSize) / 2 : minSize + ((count - min) / (max - min)) * (maxSize - minSize))
+        }));
+    } catch (e) {
+        console.warn('Kuromoji failed, falling back to heuristic tokenizer', e);
+        return generateWordFrequency(personaResponses, options);
+    }
+}
+
+export async function generateCompleteAnalysisAsync(
+    llmResponse: string,
+    personaResponses: PersonaResponses,
+    wordFreqOptions?: Parameters<typeof generateWordFrequency>[1]
+): Promise<AnalysisData> {
+    const parsedData = parseLLMResponse(llmResponse);
+    const wordFrequency = await generateWordFrequencyAsync(personaResponses, wordFreqOptions);
     return {
         ...parsedData,
         wordFrequency
