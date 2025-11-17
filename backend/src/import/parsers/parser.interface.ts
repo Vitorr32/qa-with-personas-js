@@ -6,6 +6,8 @@ export type ImportProgress = {
   processed: number;
   inserted: number;
   failed: number;
+  /** Optional total rows estimated/known */
+  total?: number;
 };
 
 export interface ImportContext {

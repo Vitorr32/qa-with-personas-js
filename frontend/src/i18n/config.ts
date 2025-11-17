@@ -46,6 +46,8 @@ const resources = {
                 foundCount_other: '{{count}} Personas Found',
                 allSelected: 'All Selected',
                 addAll: 'Add All to List',
+                addRandom: 'Add Random',
+                addRandomCount: 'Add Random {{count}}',
                 noFound: 'No personas found',
                 tryAdjustSearch: 'Try adjusting your search or filters',
                 loadMore: 'Load More'
@@ -235,6 +237,8 @@ const resources = {
                 foundCount_other: '{{count}} Personas Encontradas',
                 allSelected: 'Todas Seleccionadas',
                 addAll: 'Agregar Todo a la Lista',
+                addRandom: 'Agregar al azar',
+                addRandomCount: 'Agregar {{count}} al azar',
                 noFound: 'No se encontraron personas',
                 tryAdjustSearch: 'Intenta ajustar tu búsqueda o filtros',
                 loadMore: 'Cargar Más'
@@ -257,7 +261,8 @@ const resources = {
             },
             common: {
                 done: 'Listo',
-                cancel: 'Cancelar'
+                cancel: 'Cancelar',
+                loading: 'Cargando...'
             },
             personaadd: {
                 title: 'Agregar Nueva Persona',
@@ -423,6 +428,8 @@ const resources = {
                 foundCount_other: '{{count}} 件のペルソナが見つかりました',
                 allSelected: 'すべて選択済み',
                 addAll: 'すべてをリストに追加',
+                addRandom: 'ランダム追加',
+                addRandomCount: 'ランダムで{{count}}件追加',
                 noFound: 'ペルソナが見つかりません',
                 tryAdjustSearch: '検索条件やフィルターを調整してください',
                 loadMore: 'さらに読み込む'
@@ -445,7 +452,8 @@ const resources = {
             },
             common: {
                 done: '完了',
-                cancel: 'キャンセル'
+                cancel: 'キャンセル',
+                loading: '読み込み中...'
             },
             personaadd: {
                 title: '新しいペルソナを追加',

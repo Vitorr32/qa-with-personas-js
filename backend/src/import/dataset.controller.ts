@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Post, UploadedFile, UseInterceptors, Body, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Post, UploadedFile, UseInterceptors, Body, Query, Get, Param } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as fs from 'fs';
@@ -35,9 +35,17 @@ export class DatasetImportController {
     // As a workaround, we rely on default disk storage configured by Nest platform-express.
     if (!file) throw new BadRequestException('No file uploaded. Use field name "file".');
 
-    const parserKey = (parserKeyBody || parserKeyQuery || 'csv_persona_v1') as any;
+    const parserKey = (parserKeyBody || parserKeyQuery || 'default') as any;
     const batchSize = parseInt((batchSizeBody ?? batchSizeQuery) || '', 10) || undefined;
 
-    return this.importService.importFile(file.path, parserKey, batchSize);
+    // Start async job and return jobId immediately
+    return this.importService.startImport(file.path, parserKey, batchSize);
+  }
+
+  @Get('status/:id')
+  getStatus(@Param('id') id: string) {
+    const job = this.importService.getJob(id);
+    if (!job) throw new BadRequestException('Unknown job id');
+    return job;
   }
 }

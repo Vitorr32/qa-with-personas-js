@@ -4,6 +4,7 @@ import { Upload } from "lucide-react";
 import { useState } from "react";
 import { useAddPersonaMutation } from '../../store/apiSlice';
 import AvatarCropModal from './AvatarCropModal';
+import DatasetUploadModal from './DatasetUploadModal';
 import { Tag } from "../../utils/Tag";
 import TagPicker from "./TagPicker";
 import { errorToast, successToast } from "../../utils/Toasts";
@@ -16,6 +17,7 @@ export default function AddPersonaSection() {
     const [avatarPreview, setAvatarPreview] = useState('');
     const [addPersona] = useAddPersonaMutation();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDatasetModalOpen, setIsDatasetModalOpen] = useState(false);
 
     // Some constants
     const MAX_FILE_SIZE = 1000 * 1024; // 1 MB
@@ -113,7 +115,16 @@ export default function AddPersonaSection() {
         >
             <LoadingContainer isLoading={isSubmitting}>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('personaadd.title')}</h2>
-                <p className="text-gray-600">{t('personaadd.subtitle')}</p>
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <p className="text-gray-600">{t('personaadd.subtitle')}</p>
+                    <button
+                        type="button"
+                        onClick={() => setIsDatasetModalOpen(true)}
+                        className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100"
+                    >
+                        {t('personaadd.bulkImportButton', { defaultValue: 'Bulk import from dataset' })}
+                    </button>
+                </div>
 
 
                 <div className="bg-white rounded-xl p-6 mt-6 border border-gray-200 shadow-lg space-y-4">
@@ -193,6 +204,14 @@ export default function AddPersonaSection() {
                     outputSize={OUTPUT_AVATAR_SIZE}
                 />
             )}
+
+            <DatasetUploadModal
+                isOpen={isDatasetModalOpen}
+                onClose={() => setIsDatasetModalOpen(false)}
+                onImported={() => {
+                    // No-op here; list will refetch via cache invalidation
+                }}
+            />
         </motion.div>
     );
 }

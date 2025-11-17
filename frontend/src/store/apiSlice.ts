@@ -227,6 +227,46 @@ export const apiSlice = createApi({
                 };
             },
         }),
+
+        // Bulk import personas dataset
+        importPersonasDataset: builder.mutation<
+            { jobId: string },
+            { file: File; parser?: string; batchSize?: number }
+        >({
+            query: ({ file, parser, batchSize }) => {
+                const form = new FormData();
+                form.append('file', file, file.name);
+                if (parser) form.append('parser', parser);
+                if (typeof batchSize === 'number' && !Number.isNaN(batchSize)) {
+                    form.append('batchSize', String(batchSize));
+                }
+                return {
+                    url: '/import/personas',
+                    method: 'POST',
+                    body: form,
+                };
+            },
+            invalidatesTags: [{ type: 'Personas', id: 'LIST' }],
+        }),
+
+        getImportStatus: builder.query<
+            {
+                id: string;
+                status: 'pending' | 'running' | 'completed' | 'failed';
+                processed: number;
+                inserted: number;
+                failed: number;
+                total?: number;
+                error?: string;
+                startedAt: number;
+                updatedAt: number;
+                parser: string;
+                batchSize?: number;
+            },
+            { jobId: string }
+        >({
+            query: ({ jobId }) => ({ url: `/import/status/${jobId}`, method: 'GET' }),
+        }),
     }),
 })
 
@@ -241,5 +281,7 @@ export const {
     useGetBedrockModelsQuery,
     useUploadOpenAIFileMutation,
     useCheckOpenAIFileMutation,
-    useFetchAnalysisMutation
+    useFetchAnalysisMutation,
+    useImportPersonasDatasetMutation,
+    useGetImportStatusQuery
 } = apiSlice

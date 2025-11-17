@@ -32,7 +32,8 @@ interface CSVPersonaRow {
 export class CsvPersonaV1Parser implements DatasetParser {
   async parse(filePath: string, ctx: ImportContext): Promise<ImportProgress> {
     const batchSize = Math.max(1, ctx.batchSize ?? 250);
-    const progress: ImportProgress = { processed: 0, inserted: 0, failed: 0 };
+    const total = await this.estimateTotalRows(filePath);
+    const progress: ImportProgress = { processed: 0, inserted: 0, failed: 0, total };
 
     // Simple in-memory tag cache to reduce lookups
     const tagCache = new Map<string, Tag>();
@@ -60,6 +61,8 @@ export class CsvPersonaV1Parser implements DatasetParser {
     };
 
     return new Promise<ImportProgress>((resolve, reject) => {
+      // Send initial progress with total if available
+      if (ctx.onProgress) ctx.onProgress({ ...progress });
       parser.on('readable', async () => {
         let record: CSVPersonaRow | null;
         // eslint-disable-next-line no-cond-assign
@@ -97,6 +100,7 @@ export class CsvPersonaV1Parser implements DatasetParser {
       parser.on('end', async () => {
         try {
           await flushBatch();
+          if (ctx.onProgress) ctx.onProgress({ ...progress });
           resolve(progress);
         } catch (e) {
           reject(e);
@@ -105,6 +109,26 @@ export class CsvPersonaV1Parser implements DatasetParser {
 
       stream.pipe(parser);
     });
+  }
+
+  private async estimateTotalRows(filePath: string): Promise<number | undefined> {
+    try {
+      const fs = await import('fs');
+      return await new Promise<number>((resolve, reject) => {
+        let count = 0;
+        const stream = fs.createReadStream(filePath);
+        stream.on('data', (chunk: Buffer) => {
+          for (let i = 0; i < chunk.length; i++) if (chunk[i] === 10) count++; // \n
+        });
+        stream.on('error', (e) => reject(e));
+        stream.on('end', () => {
+          // subtract header line if file not empty
+          resolve(count > 0 ? Math.max(0, count - 1) : 0);
+        });
+      });
+    } catch {
+      return undefined;
+    }
   }
 
   private async transformRow(row: CSVPersonaRow, ctx: ImportContext, tagCache: Map<string, Tag>): Promise<Persona> {
