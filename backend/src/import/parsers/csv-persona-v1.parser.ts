@@ -53,8 +53,16 @@ export class CsvPersonaV1Parser implements DatasetParser {
         await ctx.personaRepo.save(personasBatch);
         progress.inserted += personasBatch.length;
       } catch (e) {
-        // If batch fails, count them as failed but continue
-        progress.failed += personasBatch.length;
+        // Fallback to per-row save to count accurately
+        for (const p of personasBatch) {
+          try {
+            // eslint-disable-next-line no-await-in-loop
+            await ctx.personaRepo.save(p);
+            progress.inserted += 1;
+          } catch {
+            progress.failed += 1;
+          }
+        }
       } finally {
         personasBatch.length = 0;
       }
@@ -62,7 +70,7 @@ export class CsvPersonaV1Parser implements DatasetParser {
 
     return new Promise<ImportProgress>((resolve, reject) => {
       // Send initial progress with total if available
-      if (ctx.onProgress) ctx.onProgress({ ...progress });
+      if (ctx.onProgress) ctx.onProgress(this._normalize(progress));
       parser.on('readable', async () => {
         let record: CSVPersonaRow | null;
         // eslint-disable-next-line no-cond-assign
@@ -79,7 +87,7 @@ export class CsvPersonaV1Parser implements DatasetParser {
           }
 
           progress.processed += 1;
-          if (ctx.onProgress && progress.processed % 1000 === 0) ctx.onProgress({ ...progress });
+          if (ctx.onProgress && progress.processed % 1000 === 0) ctx.onProgress(this._normalize(progress));
 
           if (personasBatch.length >= batchSize) {
             // Pause stream while flushing to DB to avoid backpressure issues
@@ -100,7 +108,7 @@ export class CsvPersonaV1Parser implements DatasetParser {
       parser.on('end', async () => {
         try {
           await flushBatch();
-          if (ctx.onProgress) ctx.onProgress({ ...progress });
+          if (ctx.onProgress) ctx.onProgress(this._normalize(progress));
           resolve(progress);
         } catch (e) {
           reject(e);
@@ -109,6 +117,14 @@ export class CsvPersonaV1Parser implements DatasetParser {
 
       stream.pipe(parser);
     });
+  }
+
+  private _normalize(p: ImportProgress): ImportProgress {
+    if (p.inserted < 0) p.inserted = 0;
+    if (p.failed < 0) p.failed = 0;
+    if (p.processed < p.inserted) p.processed = p.inserted;
+    if (p.inserted + p.failed > p.processed) p.failed = Math.max(0, p.processed - p.inserted);
+    return { ...p };
   }
 
   private async estimateTotalRows(filePath: string): Promise<number | undefined> {
