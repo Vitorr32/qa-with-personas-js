@@ -10,7 +10,7 @@ interface Props {
   onImported?: (summary: { processed: number; inserted: number; failed: number }) => void;
 }
 
-const MAX_DATASET_SIZE = 50 * 1024 * 1024; // 50 MB
+const MAX_DATASET_SIZE = 1024 * 1024 * 1024; // 1 GB
 const ACCEPT_MIME = new Set([
   'text/csv',
   'application/vnd.ms-excel',
@@ -116,7 +116,8 @@ export default function DatasetUploadModal({ isOpen, onClose, onImported }: Prop
   }, [jobId, refetchStatus]);
 
   useEffect(() => {
-    if (!statusData) return;
+    // Only react to status changes when a job is active
+    if (!jobId || !statusData) return;
     if (statusData.status === 'completed') {
       successToast(
         t('personaadd.datasetImportSuccess', {
@@ -137,7 +138,16 @@ export default function DatasetUploadModal({ isOpen, onClose, onImported }: Prop
       setIsSubmitting(false);
       setJobId(null);
     }
-  }, [statusData, t, onImported, onClose]);
+  }, [jobId, statusData, t, onImported, onClose]);
+
+  // Reset transient state whenever the modal is opened fresh
+  useEffect(() => {
+    if (!isOpen) return;
+    setIsSubmitting(false);
+    setJobId(null);
+    setFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -147,7 +157,7 @@ export default function DatasetUploadModal({ isOpen, onClose, onImported }: Prop
       <div className="relative z-10 w-full max-w-lg rounded-xl bg-white shadow-2xl border border-gray-200">
         <div className="p-6">
           <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('personaadd.bulkImportTitle', { defaultValue: 'Bulk import personas' })}</h3>
-          <p className="text-gray-600 mb-4">{t('personaadd.bulkImportSubtitle', { defaultValue: 'Upload a CSV file in the csv_persona_v1 format. Max 50 MB.' })}</p>
+          <p className="text-gray-600 mb-4">{t('personaadd.bulkImportSubtitle', { defaultValue: 'Upload a CSV file in the selected format. Max {{size}} MB.', size: Math.round(MAX_DATASET_SIZE / (1024 * 1024)) })}</p>
 
           <div className="space-y-4">
             <div>

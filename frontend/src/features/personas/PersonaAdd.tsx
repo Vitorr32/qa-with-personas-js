@@ -208,9 +208,6 @@ export default function AddPersonaSection() {
             <DatasetUploadModal
                 isOpen={isDatasetModalOpen}
                 onClose={() => setIsDatasetModalOpen(false)}
-                onImported={() => {
-                    // No-op here; list will refetch via cache invalidation
-                }}
             />
         </motion.div>
     );
