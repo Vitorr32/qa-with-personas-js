@@ -16,9 +16,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (auth.token && auth.user?.status === 'APPROVED') {
-      router.history.push({ to: '/' })
+      router.navigate({ to: '/' })
     }
-  }, [auth.token, auth.user, router.history])
+  }, [auth.token, auth.user, router])
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,7 +35,7 @@ export default function LoginPage() {
         role: me.role as any,
         status: me.status as any,
       }))
-      router.history.push({ to: '/' })
+      router.navigate({ to: '/' })
     } catch (err: any) {
       setError(err?.data?.message || 'Login failed')
     }

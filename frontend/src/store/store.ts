@@ -5,7 +5,7 @@ import { languageSlice } from "../store/languageSlice"
 import { questionSlice } from "./questionSlice"
 import { apiSlice } from "./apiSlice"
 import { listenerMiddleware } from "./listenerMiddleware"
-import authReducer, { authSlice } from './authSlice'
+import authReducer from './authSlice'
 
 
 // `combineSlices` automatically combines the reducers using
