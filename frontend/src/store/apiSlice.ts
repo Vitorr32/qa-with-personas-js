@@ -16,7 +16,7 @@ export const apiSlice = createApi({
             return headers
         },
     }),
-    tagTypes: ['Personas', 'Tags', 'Prompts', 'BedrockModels', 'UsersPending', 'AuthMe'],
+    tagTypes: ['Personas', 'Tags', 'Prompts', 'BedrockModels', 'UsersPending', 'UsersAll', 'AuthMe'],
     endpoints: (builder) => ({
         // AUTH
         register: builder.mutation<
@@ -62,7 +62,39 @@ export const apiSlice = createApi({
 
         grantSuperuser: builder.mutation<{ id: string; role: string }, { id: string }>({
             query: ({ id }) => ({ url: `/auth/grant-superuser/${id}`, method: 'PATCH' }),
-            invalidatesTags: [{ type: 'UsersPending', id: 'LIST' }],
+            invalidatesTags: [{ type: 'UsersPending', id: 'LIST' }, { type: 'UsersAll', id: 'LIST' }],
+        }),
+
+        listAllUsers: builder.query<
+            Array<{ id: string; email: string; name: string; role: string; status: string; createdAt: string; updatedAt: string }>,
+            void
+        >({
+            query: () => ({ url: '/auth/users/all', method: 'GET' }),
+            providesTags: [{ type: 'UsersAll', id: 'LIST' }],
+        }),
+
+        searchUsers: builder.query<
+            Array<{ id: string; email: string; name: string; role: string; status: string; createdAt: string; updatedAt: string }>,
+            string
+        >({
+            query: (query) => ({ url: '/auth/users/search', method: 'GET', params: { q: query } }),
+            providesTags: [{ type: 'UsersAll', id: 'LIST' }],
+        }),
+
+        updateUserStatus: builder.mutation<{ id: string; status: string }, { id: string; status: string }>({
+            query: ({ id, status }) => ({ url: `/auth/users/${id}/status`, method: 'PATCH', body: { status } }),
+            invalidatesTags: [{ type: 'UsersPending', id: 'LIST' }, { type: 'UsersAll', id: 'LIST' }],
+        }),
+
+        deleteUser: builder.mutation<{ id: string; deleted: boolean }, { id: string }>({
+            query: ({ id }) => ({ url: `/auth/users/${id}`, method: 'DELETE' }),
+            invalidatesTags: [{ type: 'UsersPending', id: 'LIST' }, { type: 'UsersAll', id: 'LIST' }],
+        }),
+
+        // Bulk delete rejected users
+        deleteAllRejectedUsers: builder.mutation<{ deleted: number }, { ids: string[] }>({
+            query: ({ ids }) => ({ url: '/auth/users/reject/delete-all', method: 'POST', body: { ids } }),
+            invalidatesTags: [{ type: 'UsersAll', id: 'LIST' }, { type: 'UsersPending', id: 'LIST' }],
         }),
         getPersonas: builder.query<
             { items: Persona[]; nextCursor?: string; hasMore: boolean; totalCount?: number },
@@ -333,6 +365,11 @@ export const {
     useApproveUserMutation,
     useRejectUserMutation,
     useGrantSuperuserMutation,
+    useListAllUsersQuery,
+    useSearchUsersQuery,
+    useUpdateUserStatusMutation,
+    useDeleteUserMutation,
+    useDeleteAllRejectedUsersMutation,
     useGetPersonasQuery,
     useAddPersonaMutation,
     useUpdatePersonaMutation,

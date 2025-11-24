@@ -217,7 +217,17 @@ const resources = {
                     approve: 'Approve',
                     reject: 'Reject',
                     makeSuperuser: 'Make Superuser',
-                    isSuperuser: 'Superuser'
+                    isSuperuser: 'Superuser',
+                    tabPending: 'Pending',
+                    tabAll: 'All Users',
+                    tabRejected: 'Rejected',
+                    searchPlaceholder: 'Search by name or email...',
+                    noUsers: 'No users found',
+                    noRejected: 'No rejected users',
+                    noSearchResults: 'No search results',
+                    userOne: 'user',
+                    users: '{{count}} users',
+                    confirmDelete: 'Are you sure you want to delete this user? This action cannot be undone.'
                 }
             },
             questioninput: {
