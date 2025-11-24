@@ -101,4 +101,12 @@ export class AuthService {
     await this.users.save(user);
     return { id: user.id, status: user.status };
   }
+
+  async grantSuperuser(userId: string) {
+    const user = await this.users.findOne({ where: { id: userId } });
+    if (!user) throw new BadRequestException('User not found');
+    user.role = UserRole.SUPERUSER;
+    await this.users.save(user);
+    return { id: user.id, role: user.role };
+  }
 }

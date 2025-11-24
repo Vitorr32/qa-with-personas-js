@@ -43,4 +43,10 @@ export class AuthController {
   reject(@Param('id') id: string) {
     return this.auth.reject(id);
   }
+
+  @Roles(UserRole.SUPERUSER)
+  @Patch('grant-superuser/:id')
+  grantSuperuser(@Param('id') id: string) {
+    return this.auth.grantSuperuser(id);
+  }
 }

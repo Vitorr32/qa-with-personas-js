@@ -35,7 +35,7 @@ function Header() {
     return (
         <motion.header
             layout
-            className="px-6 py-4 bg-white/80 backdrop-blur-sm border-b border-gray-200"
+            className="px-6 py-4 bg-white/80 backdrop-blur-sm border-b border-gray-200 relative z-40"
         >
             <div className="max-w-7xl mx-auto flex items-center justify-between">
                 <motion.h1

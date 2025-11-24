@@ -59,6 +59,11 @@ export const apiSlice = createApi({
             query: ({ id }) => ({ url: `/auth/reject/${id}`, method: 'PATCH' }),
             invalidatesTags: [{ type: 'UsersPending', id: 'LIST' }],
         }),
+
+        grantSuperuser: builder.mutation<{ id: string; role: string }, { id: string }>({
+            query: ({ id }) => ({ url: `/auth/grant-superuser/${id}`, method: 'PATCH' }),
+            invalidatesTags: [{ type: 'UsersPending', id: 'LIST' }],
+        }),
         getPersonas: builder.query<
             { items: Persona[]; nextCursor?: string; hasMore: boolean; totalCount?: number },
             { pageSize?: number; cursor?: string; inputQuery?: string; tags?: Tag[] } | void
@@ -327,6 +332,7 @@ export const {
     useListPendingUsersQuery,
     useApproveUserMutation,
     useRejectUserMutation,
+    useGrantSuperuserMutation,
     useGetPersonasQuery,
     useAddPersonaMutation,
     useUpdatePersonaMutation,

@@ -1,13 +1,14 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { useApproveUserMutation, useListPendingUsersQuery, useRejectUserMutation } from '../store/apiSlice'
-import { CheckCircle, XCircle, RefreshCw, Users } from 'lucide-react'
+import { useApproveUserMutation, useListPendingUsersQuery, useRejectUserMutation, useGrantSuperuserMutation } from '../store/apiSlice'
+import { CheckCircle, XCircle, RefreshCw, Users, Crown } from 'lucide-react'
 
 export default function AdminApprovalsPage() {
   const { t } = useTranslation()
   const { data, isFetching, refetch } = useListPendingUsersQuery()
   const [approve, { isLoading: approving }] = useApproveUserMutation()
   const [reject, { isLoading: rejecting }] = useRejectUserMutation()
+  const [grantSuperuser, { isLoading: grantingSuper }] = useGrantSuperuserMutation()
 
   const handleApprove = async (id: string) => {
     await approve({ id }).unwrap()
@@ -16,6 +17,11 @@ export default function AdminApprovalsPage() {
 
   const handleReject = async (id: string) => {
     await reject({ id }).unwrap()
+    await refetch()
+  }
+
+  const handleGrantSuperuser = async (id: string) => {
+    await grantSuperuser({ id }).unwrap()
     await refetch()
   }
 
@@ -107,8 +113,26 @@ export default function AdminApprovalsPage() {
                       <p className="text-xs text-gray-500 mt-2">
                         {t('auth.approvals.applied')} {new Date(u.createdAt).toLocaleDateString()}
                       </p>
+                      {u.role === 'SUPERUSER' && (
+                        <div className="flex items-center gap-1 mt-2">
+                          <Crown className="w-3 h-3 text-amber-600" />
+                          <p className="text-xs font-medium text-amber-600">{t('auth.approvals.isSuperuser')}</p>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-wrap justify-end">
+                      {u.role !== 'SUPERUSER' && (
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          disabled={grantingSuper}
+                          onClick={() => handleGrantSuperuser(u.id)}
+                          className="flex items-center gap-2 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                        >
+                          <Crown className="w-4 h-4" />
+                          {t('auth.approvals.makeSuperuser')}
+                        </motion.button>
+                      )}
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}

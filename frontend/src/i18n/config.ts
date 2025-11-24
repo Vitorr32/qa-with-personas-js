@@ -215,7 +215,9 @@ const resources = {
                     pendingOne: 'pending application',
                     applied: 'Applied',
                     approve: 'Approve',
-                    reject: 'Reject'
+                    reject: 'Reject',
+                    makeSuperuser: 'Make Superuser',
+                    isSuperuser: 'Superuser'
                 }
             },
             questioninput: {
@@ -471,7 +473,9 @@ const resources = {
                     pendingOne: 'solicitud pendiente',
                     applied: 'Solicitado',
                     approve: 'Aprobar',
-                    reject: 'Rechazar'
+                    reject: 'Rechazar',
+                    makeSuperuser: 'Hacer Superusuario',
+                    isSuperuser: 'Superusuario'
                 }
             },
             questioninput: {
@@ -727,7 +731,9 @@ const resources = {
                     pendingOne: '保留中の申請',
                     applied: '申請日',
                     approve: '承認',
-                    reject: '却下'
+                    reject: '却下',
+                    makeSuperuser: 'スーパーユーザーにする',
+                    isSuperuser: 'スーパーユーザー'
                 }
             },
             questioninput: {
