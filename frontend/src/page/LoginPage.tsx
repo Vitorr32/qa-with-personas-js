@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { LogIn, Mail, Lock } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useLoginMutation } from '../store/apiSlice'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { setToken, setUser } from '../store/authSlice'
 import { Link, useRouter } from '@tanstack/react-router'
 
 export default function LoginPage() {
+  const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const router = useRouter()
   const auth = useAppSelector(s => s.auth)
@@ -23,7 +25,7 @@ export default function LoginPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
+      setError(null)
     try {
       const res = await login({ email, password }).unwrap()
       dispatch(setToken(res.accessToken))
@@ -36,7 +38,7 @@ export default function LoginPage() {
       }))
       router.navigate({ to: '/' })
     } catch (err: any) {
-      setError(err?.data?.message || 'Login failed')
+      setError(err?.data?.message || t('auth.login.loginFailed'))
     }
   }
 
@@ -61,9 +63,9 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            Welcome Back
+            {t('auth.login.title')}
           </h1>
-          <p className="text-gray-600">Sign in to access the application</p>
+          <p className="text-gray-600">{t('auth.login.subtitle')}</p>
         </motion.div>
 
         {/* Form Card */}
@@ -85,14 +87,14 @@ export default function LoginPage() {
           <form onSubmit={onSubmit} className="space-y-4">
             {/* Email */}
             <motion.div whileHover={{ scale: 1.01 }}>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('auth.login.emailLabel')}</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={t('auth.login.emailPlaceholder')}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   required
                 />
@@ -101,14 +103,14 @@ export default function LoginPage() {
 
             {/* Password */}
             <motion.div whileHover={{ scale: 1.01 }}>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('auth.login.passwordLabel')}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder={t('auth.login.passwordPlaceholder')}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   required
                 />
@@ -123,14 +125,14 @@ export default function LoginPage() {
               whileTap={{ scale: 0.98 }}
               className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg hover:shadow-lg shadow-blue-200 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? t('auth.login.signingIn') : t('auth.login.signInButton')}
             </motion.button>
           </form>
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
             <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-sm text-gray-500">Don't have an account?</span>
+            <span className="text-sm text-gray-500">{t('auth.login.dontHaveAccount')}</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
@@ -139,7 +141,7 @@ export default function LoginPage() {
             to="/register"
             className="w-full block text-center py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-blue-600 hover:text-blue-600 transition-all font-medium"
           >
-            Create account
+            {t('auth.login.createAccount')}
           </Link>
         </motion.div>
       </motion.div>

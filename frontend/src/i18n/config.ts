@@ -151,7 +151,72 @@ const resources = {
             header: {
                 home: 'Home',
                 settings: 'Settings',
-                changeLanguage: 'Change language'
+                changeLanguage: 'Change language',
+                login: 'Login',
+                register: 'Register',
+                approvals: 'Approvals',
+                logout: 'Logout',
+                accountSettings: 'Account settings'
+            },
+            auth: {
+                login: {
+                    title: 'Welcome Back',
+                    subtitle: 'Sign in to access the application',
+                    emailLabel: 'Email address',
+                    emailPlaceholder: 'you@example.com',
+                    passwordLabel: 'Password',
+                    passwordPlaceholder: '••••••••',
+                    signInButton: 'Sign in',
+                    signingIn: 'Signing in...',
+                    dontHaveAccount: 'Don\'t have an account?',
+                    createAccount: 'Create account',
+                    loginFailed: 'Login failed'
+                },
+                register: {
+                    title: 'Create Account',
+                    subtitle: 'Join us and get started',
+                    nameLabel: 'Full name',
+                    namePlaceholder: 'John Doe',
+                    emailLabel: 'Email address',
+                    emailPlaceholder: 'you@example.com',
+                    passwordLabel: 'Password',
+                    passwordPlaceholder: '••••••••',
+                    passwordHint: 'Minimum 8 characters',
+                    createButton: 'Create account',
+                    creating: 'Creating account...',
+                    alreadyHaveAccount: 'Already have an account?',
+                    signIn: 'Sign in',
+                    registered: 'Registration submitted. A superuser must approve your account before you can log in.',
+                    registrationFailed: 'Registration failed'
+                },
+                account: {
+                    title: 'Account Settings',
+                    loading: 'Loading...',
+                    noUserData: 'No user data',
+                    role: 'Role',
+                    status: 'Status',
+                    joined: 'Joined',
+                    updated: 'Updated',
+                    superuser: '👑 Superuser',
+                    approved: '✓ Approved',
+                    pendingApproval: '⏳ Pending approval',
+                    rejected: '✗ Rejected',
+                    pendingMessage: 'Your account is awaiting approval from a superuser. You\'ll be notified once you\'re approved.',
+                    rejectedMessage: 'Your registration was rejected. Please contact support for more information.'
+                },
+                approvals: {
+                    title: 'Registration Approvals',
+                    subtitle: 'Review and approve pending user registrations',
+                    refresh: 'Refresh',
+                    loading: 'Loading pending registrations...',
+                    allCaughtUp: 'All caught up!',
+                    noPending: 'No pending registrations to review',
+                    pending: 'pending {{count}}',
+                    pendingOne: 'pending application',
+                    applied: 'Applied',
+                    approve: 'Approve',
+                    reject: 'Reject'
+                }
             },
             questioninput: {
                 placeholder: 'What would you like to ask?'
@@ -342,7 +407,72 @@ const resources = {
             header: {
                 home: 'Inicio',
                 settings: 'Configuración',
-                changeLanguage: 'Cambiar idioma'
+                changeLanguage: 'Cambiar idioma',
+                login: 'Iniciar sesión',
+                register: 'Registrarse',
+                approvals: 'Aprobaciones',
+                logout: 'Cerrar sesión',
+                accountSettings: 'Configuración de cuenta'
+            },
+            auth: {
+                login: {
+                    title: 'Bienvenido de vuelta',
+                    subtitle: 'Inicia sesión para acceder a la aplicación',
+                    emailLabel: 'Correo electrónico',
+                    emailPlaceholder: 'tu@ejemplo.com',
+                    passwordLabel: 'Contraseña',
+                    passwordPlaceholder: '••••••••',
+                    signInButton: 'Iniciar sesión',
+                    signingIn: 'Iniciando sesión...',
+                    dontHaveAccount: '¿No tienes una cuenta?',
+                    createAccount: 'Crear cuenta',
+                    loginFailed: 'Error al iniciar sesión'
+                },
+                register: {
+                    title: 'Crear Cuenta',
+                    subtitle: 'Únete a nosotros y comienza',
+                    nameLabel: 'Nombre completo',
+                    namePlaceholder: 'Juan Pérez',
+                    emailLabel: 'Correo electrónico',
+                    emailPlaceholder: 'tu@ejemplo.com',
+                    passwordLabel: 'Contraseña',
+                    passwordPlaceholder: '••••••••',
+                    passwordHint: 'Mínimo 8 caracteres',
+                    createButton: 'Crear cuenta',
+                    creating: 'Creando cuenta...',
+                    alreadyHaveAccount: '¿Ya tienes una cuenta?',
+                    signIn: 'Iniciar sesión',
+                    registered: 'Registro enviado. Un superusuario debe aprobar tu cuenta antes de que puedas iniciar sesión.',
+                    registrationFailed: 'Error en el registro'
+                },
+                account: {
+                    title: 'Configuración de Cuenta',
+                    loading: 'Cargando...',
+                    noUserData: 'Sin datos de usuario',
+                    role: 'Rol',
+                    status: 'Estado',
+                    joined: 'Se unió',
+                    updated: 'Actualizado',
+                    superuser: '👑 Superusuario',
+                    approved: '✓ Aprobado',
+                    pendingApproval: '⏳ Pendiente de aprobación',
+                    rejected: '✗ Rechazado',
+                    pendingMessage: 'Tu cuenta está esperando aprobación de un superusuario. Te notificaremos una vez que seas aprobado.',
+                    rejectedMessage: 'Tu registro fue rechazado. Por favor contacta a soporte para más información.'
+                },
+                approvals: {
+                    title: 'Aprobaciones de Registro',
+                    subtitle: 'Revisa y aprueba registros de usuarios pendientes',
+                    refresh: 'Actualizar',
+                    loading: 'Cargando registros pendientes...',
+                    allCaughtUp: '¡Todo al día!',
+                    noPending: 'No hay registros pendientes para revisar',
+                    pending: '{{count}} pendientes',
+                    pendingOne: 'solicitud pendiente',
+                    applied: 'Solicitado',
+                    approve: 'Aprobar',
+                    reject: 'Rechazar'
+                }
             },
             questioninput: {
                 placeholder: '¿Qué te gustaría preguntar?'
@@ -533,7 +663,72 @@ const resources = {
             header: {
                 home: 'ホーム',
                 settings: '設定',
-                changeLanguage: '言語を変更'
+                changeLanguage: '言語を変更',
+                login: 'ログイン',
+                register: '登録',
+                approvals: '承認',
+                logout: 'ログアウト',
+                accountSettings: 'アカウント設定'
+            },
+            auth: {
+                login: {
+                    title: 'おかえりなさい',
+                    subtitle: 'サインインしてアプリケーションにアクセスしてください',
+                    emailLabel: 'メールアドレス',
+                    emailPlaceholder: 'you@example.com',
+                    passwordLabel: 'パスワード',
+                    passwordPlaceholder: '••••••••',
+                    signInButton: 'サインイン',
+                    signingIn: 'サインイン中...',
+                    dontHaveAccount: 'アカウントをお持ちでないですか？',
+                    createAccount: 'アカウントを作成',
+                    loginFailed: 'ログインに失敗しました'
+                },
+                register: {
+                    title: 'アカウントを作成',
+                    subtitle: '参加して始めましょう',
+                    nameLabel: 'フルネーム',
+                    namePlaceholder: '山田太郎',
+                    emailLabel: 'メールアドレス',
+                    emailPlaceholder: 'you@example.com',
+                    passwordLabel: 'パスワード',
+                    passwordPlaceholder: '••••••••',
+                    passwordHint: '最低8文字',
+                    createButton: 'アカウントを作成',
+                    creating: 'アカウント作成中...',
+                    alreadyHaveAccount: 'すでにアカウントをお持ちですか？',
+                    signIn: 'サインイン',
+                    registered: '登録を送信しました。スーパーユーザーがアカウントを承認してから、ログインできます。',
+                    registrationFailed: '登録に失敗しました'
+                },
+                account: {
+                    title: 'アカウント設定',
+                    loading: '読み込み中...',
+                    noUserData: 'ユーザーデータなし',
+                    role: 'ロール',
+                    status: 'ステータス',
+                    joined: '参加日',
+                    updated: '更新日',
+                    superuser: '👑 スーパーユーザー',
+                    approved: '✓ 承認済み',
+                    pendingApproval: '⏳ 承認待ち',
+                    rejected: '✗ 却下',
+                    pendingMessage: 'アカウントはスーパーユーザーの承認を待っています。承認されたら通知します。',
+                    rejectedMessage: '登録が却下されました。詳細についてはサポートにお問い合わせください。'
+                },
+                approvals: {
+                    title: '登録承認',
+                    subtitle: '保留中のユーザー登録を確認して承認します',
+                    refresh: '更新',
+                    loading: '保留中の登録を読み込み中...',
+                    allCaughtUp: 'すべて完了！',
+                    noPending: 'レビュー待ちの登録はありません',
+                    pending: '{{count}}件保留中',
+                    pendingOne: '保留中の申請',
+                    applied: '申請日',
+                    approve: '承認',
+                    reject: '却下'
+                }
             },
             questioninput: {
                 placeholder: '何を質問しますか？'

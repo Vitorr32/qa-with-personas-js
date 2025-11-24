@@ -79,10 +79,10 @@ function Header() {
                                 className="p-2 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
                                 activeProps={{ className: 'bg-blue-100 text-blue-700' }}
                                 inactiveProps={{ className: 'hover:bg-gray-100 text-gray-700' }}
-                                aria-label="Admin approvals"
+                                aria-label={t('auth.approvals.title')}
                             >
                                 <ShieldCheck className="w-5 h-5" />
-                                <span className="hidden sm:inline text-sm font-medium">Approvals</span>
+                                <span className="hidden sm:inline text-sm font-medium">{t('header.approvals')}</span>
                             </Link>
                         )}
                     </motion.nav>
@@ -130,11 +130,11 @@ function Header() {
                                 <div className="flex gap-2">
                                     <Link to="/login" className="p-2 hover:bg-gray-100 rounded-lg flex items-center gap-2 cursor-pointer">
                                         <LogIn className="w-5 h-5" />
-                                        <span className="hidden sm:inline text-sm font-medium">Login</span>
+                                        <span className="hidden sm:inline text-sm font-medium">{t('header.login')}</span>
                                     </Link>
                                     <Link to="/register" className="p-2 hover:bg-gray-100 rounded-lg flex items-center gap-2 cursor-pointer">
                                         <UserIcon className="w-5 h-5" />
-                                        <span className="hidden sm:inline text-sm font-medium">Register</span>
+                                        <span className="hidden sm:inline text-sm font-medium">{t('header.register')}</span>
                                     </Link>
                                 </div>
                             ) : (
@@ -142,7 +142,7 @@ function Header() {
                                     <button
                                         onClick={() => setShowUserMenu(!showUserMenu)}
                                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
-                                        aria-label="Account"
+                                        aria-label={t('auth.account.title')}
                                     >
                                         <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
                                             {auth.user?.name?.[0]?.toUpperCase() || 'U'}
@@ -165,14 +165,14 @@ function Header() {
                                                 onClick={() => setShowUserMenu(false)}
                                             >
                                                 <Settings className="w-4 h-4" />
-                                                <span className="text-sm">Account settings</span>
+                                                <span className="text-sm">{t('header.accountSettings')}</span>
                                             </Link>
                                             <button
                                                 onClick={() => { setShowUserMenu(false); dispatch(logout()); router.navigate({ to: '/login' }); }}
                                                 className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-3 cursor-pointer text-red-700"
                                             >
                                                 <LogOut className="w-4 h-4" />
-                                                <span className="text-sm">Logout</span>
+                                                <span className="text-sm">{t('header.logout')}</span>
                                             </button>
                                         </motion.div>
                                     )}

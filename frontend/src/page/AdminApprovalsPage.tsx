@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { useApproveUserMutation, useListPendingUsersQuery, useRejectUserMutation } from '../store/apiSlice'
 import { CheckCircle, XCircle, RefreshCw, Users } from 'lucide-react'
 
 export default function AdminApprovalsPage() {
+  const { t } = useTranslation()
   const { data, isFetching, refetch } = useListPendingUsersQuery()
   const [approve, { isLoading: approving }] = useApproveUserMutation()
   const [reject, { isLoading: rejecting }] = useRejectUserMutation()
@@ -37,9 +39,9 @@ export default function AdminApprovalsPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                Registration Approvals
+                {t('auth.approvals.title')}
               </h1>
-              <p className="text-gray-600 mt-1">Review and approve pending user registrations</p>
+              <p className="text-gray-600 mt-1">{t('auth.approvals.subtitle')}</p>
             </div>
           </div>
         </motion.div>
@@ -53,7 +55,7 @@ export default function AdminApprovalsPage() {
           className="mb-6 flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-medium disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
-          Refresh
+          {t('auth.approvals.refresh')}
         </motion.button>
 
         {/* Content */}
@@ -66,7 +68,7 @@ export default function AdminApprovalsPage() {
             <div className="animate-spin mb-4">
               <RefreshCw className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-gray-600">Loading pending registrations...</p>
+            <p className="text-gray-600">{t('auth.approvals.loading')}</p>
           </motion.div>
         ) : !data || data.length === 0 ? (
           <motion.div
@@ -75,8 +77,8 @@ export default function AdminApprovalsPage() {
             className="flex flex-col items-center justify-center py-12 bg-white rounded-2xl border border-gray-200"
           >
             <CheckCircle className="w-12 h-12 text-green-500 mb-4" />
-            <p className="text-lg font-semibold text-gray-700">All caught up!</p>
-            <p className="text-gray-600 mt-1">No pending registrations to review</p>
+            <p className="text-lg font-semibold text-gray-700">{t('auth.approvals.allCaughtUp')}</p>
+            <p className="text-gray-600 mt-1">{t('auth.approvals.noPending')}</p>
           </motion.div>
         ) : (
           <motion.div
@@ -85,7 +87,7 @@ export default function AdminApprovalsPage() {
             className="space-y-3"
           >
             <div className="text-sm font-medium text-gray-600 mb-4">
-              {data.length} pending {data.length === 1 ? 'application' : 'applications'}
+              {data.length} {data.length === 1 ? t('auth.approvals.pendingOne') : `${t('auth.approvals.pending', { count: data.length })}`}
             </div>
             <AnimatePresence mode="popLayout">
               {data.map((u, index) => (
@@ -103,7 +105,7 @@ export default function AdminApprovalsPage() {
                       <h3 className="font-semibold text-gray-900">{u.name}</h3>
                       <p className="text-sm text-gray-600 mt-1">{u.email}</p>
                       <p className="text-xs text-gray-500 mt-2">
-                        Applied {new Date(u.createdAt).toLocaleDateString()}
+                        {t('auth.approvals.applied')} {new Date(u.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -115,7 +117,7 @@ export default function AdminApprovalsPage() {
                         className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <CheckCircle className="w-4 h-4" />
-                        Approve
+                        {t('auth.approvals.approve')}
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.05 }}
@@ -125,7 +127,7 @@ export default function AdminApprovalsPage() {
                         className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <XCircle className="w-4 h-4" />
-                        Reject
+                        {t('auth.approvals.reject')}
                       </motion.button>
                     </div>
                   </div>
