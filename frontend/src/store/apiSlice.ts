@@ -6,9 +6,59 @@ import { Tag } from '../utils/Tag';
 
 export const apiSlice = createApi({
     reducerPath: 'api',
-    baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_API_BASE_URL }),
-    tagTypes: ['Personas', 'Tags', 'Prompts', 'BedrockModels'],
+    baseQuery: fetchBaseQuery({
+        baseUrl: import.meta.env.VITE_API_BASE_URL,
+        prepareHeaders: (headers) => {
+            const token = typeof localStorage !== 'undefined' ? localStorage.getItem('authToken') || undefined : undefined
+            if (token) {
+                headers.set('authorization', `Bearer ${token}`)
+            }
+            return headers
+        },
+    }),
+    tagTypes: ['Personas', 'Tags', 'Prompts', 'BedrockModels', 'UsersPending', 'AuthMe'],
     endpoints: (builder) => ({
+        // AUTH
+        register: builder.mutation<
+            { id: string; email: string; name: string; role: string; status: string; message: string },
+            { email: string; name: string; password: string }
+        >({
+            query: (body) => ({ url: '/auth/register', method: 'POST', body }),
+        }),
+
+        login: builder.mutation<
+            { accessToken: string; user: { sub: string; email: string; name: string; role: string; status: string } },
+            { email: string; password: string }
+        >({
+            query: (body) => ({ url: '/auth/login', method: 'POST', body }),
+            invalidatesTags: [{ type: 'AuthMe', id: 'SINGLE' }],
+        }),
+
+        me: builder.query<
+            { id: string; email: string; name: string; role: string; status: string; createdAt: string; updatedAt: string },
+            void
+        >({
+            query: () => ({ url: '/auth/me', method: 'GET' }),
+            providesTags: [{ type: 'AuthMe', id: 'SINGLE' }],
+        }),
+
+        listPendingUsers: builder.query<
+            Array<{ id: string; email: string; name: string; role: string; status: string; createdAt: string }>,
+            void
+        >({
+            query: () => ({ url: '/auth/pending', method: 'GET' }),
+            providesTags: [{ type: 'UsersPending', id: 'LIST' }],
+        }),
+
+        approveUser: builder.mutation<{ id: string; status: string }, { id: string }>({
+            query: ({ id }) => ({ url: `/auth/approve/${id}`, method: 'PATCH' }),
+            invalidatesTags: [{ type: 'UsersPending', id: 'LIST' }],
+        }),
+
+        rejectUser: builder.mutation<{ id: string; status: string }, { id: string }>({
+            query: ({ id }) => ({ url: `/auth/reject/${id}`, method: 'PATCH' }),
+            invalidatesTags: [{ type: 'UsersPending', id: 'LIST' }],
+        }),
         getPersonas: builder.query<
             { items: Persona[]; nextCursor?: string; hasMore: boolean; totalCount?: number },
             { pageSize?: number; cursor?: string; inputQuery?: string; tags?: Tag[] } | void
@@ -271,6 +321,12 @@ export const apiSlice = createApi({
 })
 
 export const {
+    useRegisterMutation,
+    useLoginMutation,
+    useMeQuery,
+    useListPendingUsersQuery,
+    useApproveUserMutation,
+    useRejectUserMutation,
     useGetPersonasQuery,
     useAddPersonaMutation,
     useUpdatePersonaMutation,

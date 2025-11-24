@@ -11,7 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResponseRouteImport } from './routes/response'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminApprovalsRouteImport } from './routes/admin.approvals'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -23,40 +27,98 @@ const ResponseRoute = ResponseRouteImport.update({
   path: '/response',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminApprovalsRoute = AdminApprovalsRouteImport.update({
+  id: '/admin/approvals',
+  path: '/admin/approvals',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/response': typeof ResponseRoute
   '/settings': typeof SettingsRoute
+  '/admin/approvals': typeof AdminApprovalsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/response': typeof ResponseRoute
   '/settings': typeof SettingsRoute
+  '/admin/approvals': typeof AdminApprovalsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/response': typeof ResponseRoute
   '/settings': typeof SettingsRoute
+  '/admin/approvals': typeof AdminApprovalsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/response' | '/settings'
+  fullPaths:
+    | '/'
+    | '/account'
+    | '/login'
+    | '/register'
+    | '/response'
+    | '/settings'
+    | '/admin/approvals'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/response' | '/settings'
-  id: '__root__' | '/' | '/response' | '/settings'
+  to:
+    | '/'
+    | '/account'
+    | '/login'
+    | '/register'
+    | '/response'
+    | '/settings'
+    | '/admin/approvals'
+  id:
+    | '__root__'
+    | '/'
+    | '/account'
+    | '/login'
+    | '/register'
+    | '/response'
+    | '/settings'
+    | '/admin/approvals'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
   ResponseRoute: typeof ResponseRoute
   SettingsRoute: typeof SettingsRoute
+  AdminApprovalsRoute: typeof AdminApprovalsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,6 +137,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResponseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -82,13 +165,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/approvals': {
+      id: '/admin/approvals'
+      path: '/admin/approvals'
+      fullPath: '/admin/approvals'
+      preLoaderRoute: typeof AdminApprovalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
   ResponseRoute: ResponseRoute,
   SettingsRoute: SettingsRoute,
+  AdminApprovalsRoute: AdminApprovalsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

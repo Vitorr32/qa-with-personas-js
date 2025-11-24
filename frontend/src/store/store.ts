@@ -5,11 +5,14 @@ import { languageSlice } from "../store/languageSlice"
 import { questionSlice } from "./questionSlice"
 import { apiSlice } from "./apiSlice"
 import { listenerMiddleware } from "./listenerMiddleware"
+import authReducer, { authSlice } from './authSlice'
 
 
 // `combineSlices` automatically combines the reducers using
 // their `reducerPath`s, therefore we no longer need to call `combineReducers`.
-const rootReducer = combineSlices(languageSlice, questionSlice, apiSlice)
+const rootReducer = combineSlices(languageSlice, questionSlice, apiSlice, {
+  auth: authReducer,
+})
 // Infer the `RootState` type from the root reducer
 export type RootState = ReturnType<typeof rootReducer>
 
