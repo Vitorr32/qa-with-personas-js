@@ -13,19 +13,9 @@ import {
 } from '../store/apiSlice'
 import { CheckCircle, XCircle, RefreshCw, Users, Crown, Trash2, Search } from 'lucide-react'
 import { useState, useMemo } from 'react'
+import { UserStatus } from '../utils/interfaces'
 
 type TabType = 'all' | 'pending' | 'rejected'
-type UserStatus = 'APPROVED' | 'PENDING' | 'REJECTED'
-
-interface User {
-  id: string
-  email: string
-  name: string
-  role: string
-  status: UserStatus
-  createdAt: string
-  updatedAt: string
-}
 
 export default function AdminApprovalsPage() {
   const { t } = useTranslation()
@@ -158,11 +148,10 @@ export default function AdminApprovalsPage() {
                   setActiveTab(tab as TabType)
                   setSearchQuery('')
                 }}
-                className={`px-4 py-2 rounded-md font-medium transition-all ${
-                  activeTab === tab
+                className={`px-4 py-2 rounded-md font-medium transition-all ${activeTab === tab
                     ? 'bg-white text-amber-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
-                }`}
+                  }`}
               >
                 {t(`auth.approvals.tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`)} ({tab === 'pending' ? pendingUsers.length : tab === 'all' ? allUsers.length : rejectedUsers.length})
               </button>
@@ -273,11 +262,10 @@ export default function AdminApprovalsPage() {
                         <p className="text-xs text-gray-500">
                           {t('auth.approvals.applied')} {new Date(user.createdAt).toLocaleDateString()}
                         </p>
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                          user.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
-                          user.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${user.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                            user.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-red-100 text-red-700'
+                          }`}>
                           {user.status}
                         </span>
                       </div>

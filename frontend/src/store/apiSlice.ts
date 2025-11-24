@@ -3,6 +3,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { Persona } from '../utils/Persona'
 import { Prompt } from '../utils/Prompt'
 import { Tag } from '../utils/Tag';
+import { User } from '../utils/interfaces';
 
 export const apiSlice = createApi({
     reducerPath: 'api',
@@ -27,7 +28,7 @@ export const apiSlice = createApi({
         }),
 
         login: builder.mutation<
-            { accessToken: string; user: { sub: string; email: string; name: string; role: string; status: string } },
+            { accessToken: string; user: User },
             { email: string; password: string }
         >({
             query: (body) => ({ url: '/auth/login', method: 'POST', body }),
@@ -35,7 +36,7 @@ export const apiSlice = createApi({
         }),
 
         me: builder.query<
-            { id: string; email: string; name: string; role: string; status: string; createdAt: string; updatedAt: string },
+            User,
             void
         >({
             query: () => ({ url: '/auth/me', method: 'GET' }),
@@ -43,7 +44,7 @@ export const apiSlice = createApi({
         }),
 
         listPendingUsers: builder.query<
-            Array<{ id: string; email: string; name: string; role: string; status: string; createdAt: string }>,
+            Array<User>,
             void
         >({
             query: () => ({ url: '/auth/pending', method: 'GET' }),
@@ -66,7 +67,7 @@ export const apiSlice = createApi({
         }),
 
         listAllUsers: builder.query<
-            Array<{ id: string; email: string; name: string; role: string; status: string; createdAt: string; updatedAt: string }>,
+            Array<User>,
             void
         >({
             query: () => ({ url: '/auth/users/all', method: 'GET' }),
@@ -74,7 +75,7 @@ export const apiSlice = createApi({
         }),
 
         searchUsers: builder.query<
-            Array<{ id: string; email: string; name: string; role: string; status: string; createdAt: string; updatedAt: string }>,
+            Array<User>,
             string
         >({
             query: (query) => ({ url: '/auth/users/search', method: 'GET', params: { q: query } }),

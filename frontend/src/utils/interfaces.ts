@@ -16,3 +16,15 @@ export interface LLMResponseFormat {
     sentiment_distribution: { positive: number; negative: number; neutral: number };
     themes: { theme: string; frequency: number }[];
 }
+
+export type UserStatus = 'APPROVED' | 'PENDING' | 'REJECTED'
+
+export interface User {
+    id: string
+    email: string
+    name: string
+    role: string
+    status: UserStatus
+    createdAt: string
+    updatedAt: string
+}

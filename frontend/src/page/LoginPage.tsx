@@ -30,7 +30,7 @@ export default function LoginPage() {
       const res = await login({ email, password }).unwrap()
       dispatch(setToken(res.accessToken))
       dispatch(setUser({
-        id: res.user.sub,
+        id: res.user.id,
         email: res.user.email,
         name: res.user.name,
         role: res.user.role as any,
