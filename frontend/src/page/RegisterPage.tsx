@@ -41,7 +41,7 @@ export default function RegisterPage() {
       >
         {/* Header */}
         <motion.div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
+          <div className="flex items-center justify-center mb-4 mt-4">
             <div className="bg-gradient-to-br from-green-600 to-emerald-600 p-3 rounded-2xl">
               <UserPlus className="w-8 h-8 text-white" />
             </div>
@@ -153,7 +153,7 @@ export default function RegisterPage() {
             to="/login"
             className="w-full block text-center py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-green-600 hover:text-green-600 transition-all font-medium"
           >
-            {t('auth.register.signIn')}
+            Sign in instead
           </Link>
         </motion.div>
       </motion.div>
