@@ -53,8 +53,14 @@ import { RolesGuard } from './auth/roles.guard';
     OpenAIService,
     DatasetImportService,
     BedrockService,
-    { provide: APP_GUARD, useClass: JwtAuthGuard },
-    { provide: APP_GUARD, useClass: RolesGuard },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
   ],
 })
 export class AppModule { }
