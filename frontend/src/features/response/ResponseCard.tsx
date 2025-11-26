@@ -89,6 +89,12 @@ export default function ResponseCard({ persona, broadcastState }: ResponseCardPr
             // We can't use RTK Query's built-in streaming, so we handle it manually
             const hasFiles = attachedFiles && attachedFiles.length > 0;
 
+            // Build auth + SSE headers like apiSlice
+            const token = typeof localStorage !== 'undefined' ? localStorage.getItem('authToken') : null;
+            const headers = new Headers();
+            headers.set('Accept', 'text/event-stream');
+            if (token) headers.set('Authorization', `Bearer ${token}`);
+
             let fetchOptions: RequestInit = {
                 method: 'POST',
                 signal: abortControllerRef.current.signal,
@@ -102,8 +108,10 @@ export default function ResponseCard({ persona, broadcastState }: ResponseCardPr
                     form.append('files', file, file.name);
                 }
                 fetchOptions.body = form;
+                fetchOptions.headers = headers;
             } else {
-                fetchOptions.headers = { 'Content-Type': 'application/json' };
+                headers.set('Content-Type', 'application/json');
+                fetchOptions.headers = headers;
                 fetchOptions.body = JSON.stringify({
                     personaId: persona.id,
                     question: question,

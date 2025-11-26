@@ -97,7 +97,13 @@ export default function PersonaGrid({
             if (localCursor) params.set('cursor', localCursor);
             else params.delete('cursor');
 
-            const res = await fetch(`${baseUrl}/personas?${params.toString()}`, { method: 'GET' });
+            // Attach auth header like apiSlice
+            const token = typeof localStorage !== 'undefined' ? localStorage.getItem('authToken') : null;
+            const headers = new Headers();
+            headers.set('Accept', 'application/json');
+            if (token) headers.set('Authorization', `Bearer ${token}`);
+
+            const res = await fetch(`${baseUrl}/personas?${params.toString()}`, { method: 'GET', headers });
             if (!res.ok) break;
             const data = await res.json();
 
