@@ -1,4 +1,5 @@
 import { Tag } from './Tag';
+import { User } from './interfaces';
 
 export interface Persona {
     id: string;
@@ -8,4 +9,5 @@ export interface Persona {
     description: string;
     tags: Tag[];
     createdAt?: string;
+    creator?: User;
 }

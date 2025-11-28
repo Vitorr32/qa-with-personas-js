@@ -29,7 +29,7 @@ export class PersonasService {
         }
     }
 
-    async create(createPersonaDto: CreatePersonaDto, avatarFile?: Express.Multer.File): Promise<Persona> {
+    async create(createPersonaDto: CreatePersonaDto, avatarFile?: Express.Multer.File, creatorUserId?: string): Promise<Persona> {
         let avatarPath: string | null = null;
 
         if (avatarFile) {
@@ -48,6 +48,7 @@ export class PersonasService {
             ...createPersonaDto,
             avatar: avatarPath || undefined,
             tags,
+            creator: creatorUserId ? ({ id: creatorUserId } as any) : undefined,
         });
 
         return this.personaRepo.save(persona);
@@ -66,6 +67,7 @@ export class PersonasService {
         return this.personaRepo
             .createQueryBuilder('persona')
             .leftJoinAndSelect('persona.tags', 'tag')
+            .leftJoinAndSelect('persona.creator', 'creator')
             .where('LOWER(persona.name) LIKE :q', { q })
             .orWhere('LOWER(persona.greeting) LIKE :q', { q })
             .orWhere('LOWER(persona.description) LIKE :q', { q })
@@ -82,7 +84,10 @@ export class PersonasService {
         inputQuery?: string,
         tagIds?: string[],
     ): Promise<{ items: Persona[]; nextCursor?: string; hasMore: boolean; totalCount: number }> {
-        const qb = this.personaRepo.createQueryBuilder('persona').leftJoinAndSelect('persona.tags', 'tag');
+        const qb = this.personaRepo
+            .createQueryBuilder('persona')
+            .leftJoinAndSelect('persona.tags', 'tag')
+            .leftJoinAndSelect('persona.creator', 'creator');
         const countQb = this.personaRepo.createQueryBuilder('persona').leftJoin('persona.tags', 'tag');
 
         // Search filter

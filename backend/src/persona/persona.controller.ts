@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException, Query, Req } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PersonasService } from './persona.services';
 import { CreatePersonaDto, UpdatePersonaDto } from './persona.dto';
@@ -9,11 +9,12 @@ export class PersonasController {
 
     @Post()
     @UseInterceptors(FileInterceptor('avatar'))
-    create(@Body() createPersonaDto: CreatePersonaDto, @UploadedFile() file?: Express.Multer.File) {
+    create(@Body() createPersonaDto: CreatePersonaDto, @UploadedFile() file?: Express.Multer.File, @Req() req?: any) {
         if (file && !file.mimetype.startsWith('image/')) {
             throw new BadRequestException('Uploaded file must be an image');
         }
-        return this.personasService.create(createPersonaDto, file);
+        const creatorUserId = req?.user?.sub;
+        return this.personasService.create(createPersonaDto, file, creatorUserId);
     }
 
     @Get()

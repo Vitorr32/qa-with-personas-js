@@ -154,6 +154,16 @@ export default function PersonaCard({ persona, isSelected, onToggleSelect, anima
                                     <div className="text-sm text-gray-600 space-y-1">
                                         <p><span className="font-medium">{t('personacard.id')}:</span> {persona.id}</p>
                                         <p><span className="font-medium">{t('personacard.totalTags')}:</span> {persona.tags.length}</p>
+                                        {persona.creator && (
+                                            <>
+                                                <p>
+                                                    <span className="font-medium">{t('personacard.creator', { defaultValue: 'Creator' })}:</span> {persona.creator.name}
+                                                </p>
+                                                <p>
+                                                    <span className="font-medium">{t('personacard.creatorId', { defaultValue: 'Creator ID' })}:</span> {persona.creator.id}
+                                                </p>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>

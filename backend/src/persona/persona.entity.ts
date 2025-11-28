@@ -1,5 +1,6 @@
 import { Tag } from 'src/tag/tag.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
+import { User } from 'src/user/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity('personas')
 export class Persona {
@@ -25,6 +26,10 @@ export class Persona {
         inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' },
     })
     tags: Tag[];
+
+    @ManyToOne(() => User, { nullable: true, eager: true })
+    @JoinColumn({ name: 'creator_id' })
+    creator?: User | null;
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date;
