@@ -9,6 +9,7 @@ import {
   UploadedFile,
   UploadedFiles,
   Logger,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { OpenAIService } from './openai.service';
@@ -38,7 +39,7 @@ export class OpenAIController {
 
   @Post('stream')
   @UseInterceptors(FilesInterceptor('files'))
-  async stream(@Body() dto: StreamRequestDto, @UploadedFiles() files: Express.Multer.File[], @Res() res: any) {
+  async stream(@Body() dto: StreamRequestDto, @UploadedFiles() files: Express.Multer.File[], @Res() res: any, @Req() req: any) {
     if (!dto || !dto.personaId || !dto.question) {
       throw new BadRequestException('personaId and question are required');
     }
@@ -50,7 +51,7 @@ export class OpenAIController {
     const persona = await this.personas.findOne(dto.personaId);
     if (!persona) throw new NotFoundException('Persona not found');
 
-    const prompts = await this.prompts.getPrompts();
+    const prompts = await this.prompts.getPromptsForUser(req.user.sub);
 
     // Compose messages: main prompt, persona description/greeting, then user question
     const systemContent = `${prompts.mainPrompt}\n\nPersona:\nName: ${persona.name}\nDescription: ${persona.description}`;
@@ -132,7 +133,7 @@ export class OpenAIController {
 
   @Post('analyze')
   @UseInterceptors(FilesInterceptor('files'))
-  async analyze(@Body() dto: AnalyzeRequestDto, @UploadedFiles() _files: Express.Multer.File[]) {
+  async analyze(@Body() dto: AnalyzeRequestDto, @UploadedFiles() _files: Express.Multer.File[], @Req() req: any) {
     if (!dto || !dto.responses || !Array.isArray(dto.responses)) {
       // If multipart form, parse responses JSON
       if (dto && (dto as any).responses && typeof (dto as any).responses === 'string') {
@@ -157,7 +158,7 @@ export class OpenAIController {
       }
     }
 
-    const prompts = await this.prompts.getPrompts();
+    const prompts = await this.prompts.getPromptsForUser(req.user.sub);
 
     // Format the responses for analysis
     let messageList: { role: string, content: string }[] = [{ role: 'user', content: `Question Asked: ${dto.question}` }];

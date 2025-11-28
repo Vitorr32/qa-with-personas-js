@@ -1,9 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
+import { User } from '../user/user.entity';
 
 @Entity('prompts')
 export class Prompts {
-    @PrimaryGeneratedColumn('increment')
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
+    // Owner user. Nullable to allow smooth sync on existing databases.
+    @Index({ unique: true })
+    @Column({ type: 'uuid', nullable: true })
+    userId: string | null;
+
+    @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: true })
+    @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+    user?: User | null;
 
     @Column({ type: 'text' })
     mainPrompt: string;

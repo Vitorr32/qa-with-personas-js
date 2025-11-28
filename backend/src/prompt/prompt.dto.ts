@@ -26,7 +26,7 @@ export class UpdatePromptsDto {
 }
 
 export class PromptsResponseDto {
-    id: number;
+    id: string;
     mainPrompt: string;
     analystPrompt: string;
     analystModel?: string | null;

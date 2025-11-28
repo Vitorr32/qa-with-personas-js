@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Put, Body, HttpCode, HttpStatus, Req } from '@nestjs/common';
 import { PromptsService } from './prompt.service';
 import { PromptsResponseDto, UpdatePromptsDto } from './prompt.dto';
 
@@ -7,15 +7,16 @@ export class PromptsController {
     constructor(private readonly promptsService: PromptsService) { }
 
     @Get()
-    async getPrompts(): Promise<PromptsResponseDto> {
-        return this.promptsService.getPrompts();
+    async getPrompts(@Req() req: any): Promise<PromptsResponseDto> {
+        return this.promptsService.getPromptsForUser(req.user.sub);
     }
 
     @Put()
     @HttpCode(HttpStatus.OK)
     async updatePrompts(
+        @Req() req: any,
         @Body() updatePromptsDto: UpdatePromptsDto,
     ): Promise<PromptsResponseDto> {
-        return this.promptsService.updatePrompts(updatePromptsDto);
+        return this.promptsService.updatePromptsForUser(req.user.sub, updatePromptsDto);
     }
 }

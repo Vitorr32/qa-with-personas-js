@@ -5,11 +5,14 @@ import { User, UserRole, UserStatus } from '../user/user.entity';
 import { LoginDto, RegisterUserDto } from '../user/user.dto';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
+import { Prompts } from '../prompt/prompt.entity';
+import { loadDefaultPrompts } from '../prompt/defaults.helper';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private users: Repository<User>,
+    @InjectRepository(Prompts) private promptsRepo: Repository<Prompts>,
     private jwt: JwtService,
   ) {}
 
@@ -29,6 +32,22 @@ export class AuthService {
       status: count === 0 ? UserStatus.APPROVED : UserStatus.PENDING,
     });
     await this.users.save(user);
+
+    // Seed per-user prompts from defaults
+    try {
+      const defaults = loadDefaultPrompts();
+      const p = this.promptsRepo.create({
+        userId: user.id,
+        mainPrompt: defaults.mainPrompt,
+        analystPrompt: defaults.analystPrompt,
+        temperature: defaults.temperature,
+        analystModel: null,
+        responseModel: null,
+      } as any);
+      await this.promptsRepo.save(p);
+    } catch (e) {
+      // Non-fatal if seeding fails; user can still set prompts later
+    }
 
     return {
       id: user.id,

@@ -9,6 +9,7 @@ import {
   Res,
   UseInterceptors,
   UploadedFiles,
+  Req,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { BedrockService } from './bedrock.service';
@@ -53,7 +54,7 @@ export class BedrockController {
 
   @Post('stream')
   @UseInterceptors(FilesInterceptor('files'))
-  async stream(@Body() dto: StreamRequestDto, @UploadedFiles() files: Express.Multer.File[], @Res() res: any) {
+  async stream(@Body() dto: StreamRequestDto, @UploadedFiles() files: Express.Multer.File[], @Res() res: any, @Req() req: any) {
     if (!dto || !dto.personaId || !dto.question) {
       throw new BadRequestException('personaId and question are required');
     }
@@ -65,7 +66,7 @@ export class BedrockController {
     const persona = await this.personas.findOne(dto.personaId);
     if (!persona) throw new NotFoundException('Persona not found');
 
-    const prompts = await this.prompts.getPrompts();
+    const prompts = await this.prompts.getPromptsForUser(req.user.sub);
 
     const systemContent = `${prompts.mainPrompt}\n\nPersona:\nName: ${persona.name}\nDescription: ${persona.description}`;
     const finalSystem = dto?.fileIds?.length
@@ -156,7 +157,7 @@ export class BedrockController {
 
   @Post('analyze')
   @UseInterceptors(FilesInterceptor('files'))
-  async analyze(@Body() dto: AnalyzeRequestDto, @UploadedFiles() files: Express.Multer.File[]) {
+  async analyze(@Body() dto: AnalyzeRequestDto, @UploadedFiles() files: Express.Multer.File[], @Req() req: any) {
     if (!dto || !dto.responses || !Array.isArray(dto.responses)) {
       // If coming as multipart, responses can be a JSON string
       if (dto && (dto as any).responses && typeof (dto as any).responses === 'string') {
@@ -181,7 +182,7 @@ export class BedrockController {
       }
     }
 
-    const prompts = await this.prompts.getPrompts();
+    const prompts = await this.prompts.getPromptsForUser(req.user.sub);
 
   const hasFiles = Array.isArray(files) && files.length > 0;
     const messages: { role: 'user' | 'assistant'; content: string }[] = [

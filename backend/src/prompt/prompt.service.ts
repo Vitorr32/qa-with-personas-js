@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DeepPartial } from 'typeorm';
 import { Prompts } from './prompt.entity';
 import { PromptsResponseDto, UpdatePromptsDto } from './prompt.dto';
+import { loadDefaultPrompts } from './defaults.helper';
 
 @Injectable()
 export class PromptsService {
@@ -11,53 +12,65 @@ export class PromptsService {
         private readonly promptsRepository: Repository<Prompts>,
     ) { }
 
-    async getPrompts(): Promise<PromptsResponseDto> {
-        // Fetch the single prompts row. Don't assume an id value so this works
-        // whether the PK is a uuid or an auto-increment integer.
-        const promptsArray = await this.promptsRepository.find();
-        const prompts = promptsArray[0];
-
+    async getPromptsForUser(userId: string): Promise<PromptsResponseDto> {
+        let prompts: Prompts | null = await this.promptsRepository.findOne({ where: { userId } });
         if (!prompts) {
-            throw new NotFoundException('Prompts configuration not found');
+            // Auto-create from defaults if missing
+            const defaults = loadDefaultPrompts();
+            const created = this.promptsRepository.create({
+                userId,
+                mainPrompt: defaults.mainPrompt,
+                analystPrompt: defaults.analystPrompt,
+                temperature: defaults.temperature,
+                analystModel: null,
+                responseModel: null,
+            } as DeepPartial<Prompts>);
+            prompts = await this.promptsRepository.save(created);
         }
 
+        const p = prompts as Prompts;
         return {
-            id: prompts.id,
-            mainPrompt: prompts.mainPrompt,
-            analystPrompt: prompts.analystPrompt,
-            analystModel: (prompts as any).analystModel ?? null,
-            responseModel: (prompts as any).responseModel ?? null,
-            temperature: typeof (prompts as any).temperature === 'number' ? (prompts as any).temperature : 0.7,
+            id: p.id,
+            mainPrompt: p.mainPrompt,
+            analystPrompt: p.analystPrompt,
+            analystModel: (p as any).analystModel ?? null,
+            responseModel: (p as any).responseModel ?? null,
+            temperature: typeof (p as any).temperature === 'number' ? (p as any).temperature : 0.7,
         };
     }
 
-    async updatePrompts(updatePromptsDto: UpdatePromptsDto): Promise<PromptsResponseDto> {
-        const promptsArray = await this.promptsRepository.find();
-        let prompts = promptsArray[0];
-
+    async updatePromptsForUser(userId: string, updatePromptsDto: UpdatePromptsDto): Promise<PromptsResponseDto> {
+        let prompts: Prompts | null = await this.promptsRepository.findOne({ where: { userId } });
         if (!prompts) {
-            // Create the row if it doesn't exist. Let the database generate the id
-            // (works with UUID or numeric PKs).
+            // Create new row for this user
             prompts = this.promptsRepository.create({
-                ...updatePromptsDto,
-            });
+                userId,
+                mainPrompt: updatePromptsDto.mainPrompt,
+                analystPrompt: updatePromptsDto.analystPrompt,
+                analystModel: (updatePromptsDto as any).analystModel ?? null,
+                responseModel: (updatePromptsDto as any).responseModel ?? null,
+                temperature: 0.7,
+            } as DeepPartial<Prompts>);
         } else {
             // Update existing row
             prompts.mainPrompt = updatePromptsDto.mainPrompt;
             prompts.analystPrompt = updatePromptsDto.analystPrompt;
-            // Update model selections if provided
             if (typeof (updatePromptsDto as any).analystModel !== 'undefined') {
                 (prompts as any).analystModel = (updatePromptsDto as any).analystModel || null;
             }
             if (typeof (updatePromptsDto as any).responseModel !== 'undefined') {
                 (prompts as any).responseModel = (updatePromptsDto as any).responseModel || null;
             }
-            // Coerce and clamp temperature server-side to be safe
-            const temp = Math.max(0.1, Math.min(2, Number((updatePromptsDto as any).temperature ?? (prompts as any).temperature ?? 0.7)));
-            (prompts as any).temperature = temp;
         }
 
-        const savedPrompts = await this.promptsRepository.save(prompts);
+        // Coerce and clamp temperature server-side to be safe
+        const temp = Math.max(
+            0.1,
+            Math.min(2, Number((updatePromptsDto as any).temperature ?? (prompts as any).temperature ?? 0.7)),
+        );
+        (prompts as any).temperature = temp;
+
+        const savedPrompts = await this.promptsRepository.save(prompts as Prompts);
 
         return {
             id: savedPrompts.id,
